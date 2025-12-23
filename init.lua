@@ -49,7 +49,7 @@ local hudPosIndex = 1
 local customHudX, customHudY = 100, 100
 
 local maxHudWidth = 700
-local minHudWidth = 350 -- Slightly wider to accommodate centered text better
+local minHudWidth = 350
 local hudPadding = 30
 local hudBgColor = { red=0.1, green=0.1, blue=0.1, alpha=0.98 }
 local hudStrokeColor = { white=1, alpha=0.1 }
@@ -81,7 +81,7 @@ local bufferBgColor = { red=0.15, green=0.15, blue=0.15, alpha=0.95 }
 local bufferTxtColor = { red=0.6, green=1, blue=0.6, alpha=1 }
 
 -- MAIN PREFS GEOMETRY
-local prefW, prefH = 450, 850 -- Taller to space things out
+local prefW, prefH = 450, 850
 local prefX, prefY = (screen.w - prefW) / 2, (screen.h - prefH) / 2
 
 -- EXCLUSION LIST GEOMETRY
@@ -261,7 +261,6 @@ end
 -- FORMAT HUD TEXT: CENTER ALIGNED
 local function formatHudBody(rawText)
     local finalStyled = styledtext.new("")
-    -- Added alignment="center" to all styles
     local baseStyle = { font={name=".AppleSystemUIFont", size=fontBodySize}, color=colorDesc, paragraphStyle={lineSpacing=6, alignment="center"} }
     local keyStyle =  { font={name=".AppleSystemUIFontBold", size=fontBodySize}, color=colorKey, paragraphStyle={lineSpacing=6, alignment="center"} }
     local headerStyle = { font={name=".AppleSystemUIFontBold", size=fontBodySize-2}, color=colorHeader, paragraphStyle={lineSpacing=6, alignment="center"} }
@@ -272,7 +271,6 @@ local function formatHudBody(rawText)
             finalStyled = finalStyled .. styledtext.new("\n" .. line .. "\n", headerStyle)
         elseif line:match(":") then
             local keyPart, descPart = line:match("^(.-)%s*:%s*(.*)$")
-            -- We construct the line as one paragraph to ensure centering works across the whole line
             finalStyled = finalStyled .. styledtext.new(keyPart, keyStyle) .. styledtext.new(" : ", baseStyle) .. styledtext.new(descPart .. "\n", baseStyle)
         else
             finalStyled = finalStyled .. styledtext.new(line .. "\n", baseStyle)
@@ -345,7 +343,6 @@ local function updateDragHandles()
 end
 
 local function presentHud(title, rawBodyText, titleOverrideColor)
-    -- HUD Title: Centered
     local styledTitle = styledtext.new(title, { font={name=".AppleSystemUIFontBold", size=fontTitleSize}, color=titleOverrideColor or colorTitle, paragraphStyle={alignment="center"} })
     local styledBody = formatHudBody(rawBodyText)
 
@@ -383,12 +380,12 @@ _G.exclPanel = canvas.new({x=exclX, y=exclY, w=exclW, h=exclH}):level(hs.canvas.
 
 local sortedExclusions = {}
 
--- 1. INIT MAIN PREFS (Tidied Spacing + Center Alignment)
+-- 1. INIT MAIN PREFS (Tidied Spacing + Reordered)
 local function initPrefs()
     _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=12, yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
     _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="3%",w="100%",h="8%"} }
 
-    -- 8 Buttons evenly spaced from 10% to ~66% (Step of 7%)
+    -- 8 Buttons evenly spaced
     for i=0,7 do
         local yPos = 10 + (i * 7)
         _G.prefPanel[3 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="6%"} }
@@ -433,18 +430,22 @@ local function updatePrefsVisuals()
         _G.prefPanel[idx].roundedRectRadii = {xRadius=6, yRadius=6}
         _G.prefPanel[idx+1].text = styledtext.new(txt, {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
     end
-    styleBtn(3, isHudEnabled, "Suggestions: "..(isHudEnabled and "ON" or "OFF"))
-    styleBtn(5, isBufferEnabled, "Key Buffer: "..(isBufferEnabled and "ON" or "OFF"))
-    styleBtn(7, isActionInfoEnabled, "Action Info: "..(isActionInfoEnabled and "ON" or "OFF"))
-    styleBtn(9, isAerospaceEnabled, "Aerospace Info: "..(isAerospaceEnabled and "ON" or "OFF"))
-    styleBtn(11, isMasterEnabled, "Master Power: "..(isMasterEnabled and "ON" or "OFF"))
+
+    -- REORDERED LOGICAL FLOW
+    styleBtn(3, isMasterEnabled, "Master Power: "..(isMasterEnabled and "ON" or "OFF"))
+    styleBtn(5, isHudEnabled, "Suggestions: "..(isHudEnabled and "ON" or "OFF"))
+    styleBtn(7, isBufferEnabled, "Key Buffer: "..(isBufferEnabled and "ON" or "OFF"))
+    styleBtn(9, isActionInfoEnabled, "Action Info: "..(isActionInfoEnabled and "ON" or "OFF"))
+
+    -- RENAMED ESCAPE MENU BUTTON
+    styleBtn(11, isEscapeMenuEnabled, "Entry Menu: "..(isEscapeMenuEnabled and "ON" or "OFF"))
+
+    styleBtn(13, isMacroEnabled, "Macro Rec: "..(isMacroEnabled and "ON" or "OFF"))
+    styleBtn(15, isAerospaceEnabled, "Aerospace Info: "..(isAerospaceEnabled and "ON" or "OFF"))
 
     local posNames = {"Left (150px)", "Top Right", "Bot Right", "True Center", "Custom"}
-    _G.prefPanel[13].fillColor = btnColorAction; _G.prefPanel[13].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[14].text = styledtext.new("Pos: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
-
-    styleBtn(15, isEscapeMenuEnabled, "Esc for Menu: "..(isEscapeMenuEnabled and "ON" or "OFF"))
-    styleBtn(17, isMacroEnabled, "Macro Rec: "..(isMacroEnabled and "ON" or "OFF"))
+    _G.prefPanel[17].fillColor = btnColorAction; _G.prefPanel[17].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[18].text = styledtext.new("Pos: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
 
     local function styleSmallBtn(idx) _G.prefPanel[idx].fillColor = btnColorAction; _G.prefPanel[idx].roundedRectRadii={xRadius=6,yRadius=6} end
     styleSmallBtn(19); styleSmallBtn(21); styleSmallBtn(24); styleSmallBtn(26)
@@ -459,7 +460,7 @@ local function updatePrefsVisuals()
     _G.prefPanel[32].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 end
 
--- 2. EXCLUSION LIST PANEL (Centered List)
+-- 2. EXCLUSION LIST PANEL
 local function updateExclusionPanel()
     while #_G.exclPanel > 0 do _G.exclPanel[#_G.exclPanel] = nil end
 
@@ -476,7 +477,6 @@ local function updateExclusionPanel()
     for i, bundleId in ipairs(sortedExclusions) do
         local yVal = startY + ((i-1) * (rowH + 5))
         _G.exclPanel[#_G.exclPanel+1] = { type="rectangle", action="fill", fillColor={red=0.2,green=0.2,blue=0.2,alpha=1}, frame={x="5%", y=yVal, w="80%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
-        -- Centered App Name
         _G.exclPanel[#_G.exclPanel+1] = { type="text", text=bundleId, textColor={white=0.9}, textSize=13, textAlignment="center", frame={x="7%", y=yVal+7, w="75%", h=rowH} }
         _G.exclPanel[#_G.exclPanel+1] = { type="rectangle", action="fill", fillColor=btnColorExclude, frame={x="87%", y=yVal, w="8%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
         _G.exclPanel[#_G.exclPanel+1] = { type="text", text="X", textColor={white=1}, textSize=14, textAlignment="center", frame={x="87%", y=yVal+6, w="8%", h=rowH} }
@@ -489,7 +489,7 @@ end
 initPrefs(); updatePrefsVisuals()
 
 -- =================================================
--- INTERACTION WATCHER (Adjusted for Tidy Spacing)
+-- INTERACTION WATCHER (Reordered Logic)
 -- =================================================
 local dragTarget = nil
 local dragOffset = {x=0, y=0}
@@ -503,15 +503,23 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         if _G.prefPanel:isShowing() and p.x >= f.x and p.x <= (f.x + f.w) and p.y >= f.y and p.y <= (f.y + f.h) then
             local relY = (p.y - f.y) / f.h; local relX = (p.x - f.x) / f.w; local changed = false
 
-            -- Adjusted Logic for 7% spacing steps starting at 10%
-            if relY > 0.10 and relY < 0.16 then isHudEnabled = not isHudEnabled; changed=true
-            elseif relY > 0.17 and relY < 0.23 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
-            elseif relY > 0.24 and relY < 0.30 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
-            elseif relY > 0.31 and relY < 0.37 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
-            elseif relY > 0.38 and relY < 0.44 then isMasterEnabled = not isMasterEnabled; changed=true
-            elseif relY > 0.45 and relY < 0.51 then hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end; changed=true
-            elseif relY > 0.52 and relY < 0.58 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
-            elseif relY > 0.59 and relY < 0.65 then isMacroEnabled = not isMacroEnabled; changed=true
+            -- REORDERED CLICK ZONES (Must match updatePrefsVisuals order)
+            -- 1. Master Power (10% - 16%)
+            if relY > 0.10 and relY < 0.16 then isMasterEnabled = not isMasterEnabled; changed=true
+            -- 2. Suggestions (17% - 23%)
+            elseif relY > 0.17 and relY < 0.23 then isHudEnabled = not isHudEnabled; changed=true
+            -- 3. Key Buffer (24% - 30%)
+            elseif relY > 0.24 and relY < 0.30 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
+            -- 4. Action Info (31% - 37%)
+            elseif relY > 0.31 and relY < 0.37 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
+            -- 5. Entry Menu (Esc) (38% - 44%)
+            elseif relY > 0.38 and relY < 0.44 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
+            -- 6. Macro Rec (45% - 51%)
+            elseif relY > 0.45 and relY < 0.51 then isMacroEnabled = not isMacroEnabled; changed=true
+            -- 7. Aerospace (52% - 58%)
+            elseif relY > 0.52 and relY < 0.58 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
+            -- 8. Position (59% - 65%)
+            elseif relY > 0.59 and relY < 0.65 then hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end; changed=true
 
             -- Sizing Controls (Start ~68%)
             elseif relY > 0.68 and relY < 0.74 then
@@ -615,7 +623,7 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
         if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
         if _G.prefPanel:isShowing() then _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); resetToNormal(); return true end
         if _G.hud:isShowing() or #keyHistory > 0 then resetToNormal(); return false end
-        if isHudEnabled and not isEditMode and not isCurrentAppDisabled() then presentHud(indexMenu.title, indexMenu.text, colorTitle); return false end
+        if isHudEnabled and isEscapeMenuEnabled and not isEditMode and not isCurrentAppDisabled() then presentHud(indexMenu.title, indexMenu.text, colorTitle); return false end
         return false
     end
 
