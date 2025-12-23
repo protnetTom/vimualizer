@@ -683,17 +683,25 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
 
     -- 1. GLOBAL ESCAPE HANDLER
     if keyName == "escape" or (flags.ctrl and keyName == "[") then
+        -- A. Close Settings Panels if open (Blocking)
         if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
         if _G.prefPanel:isShowing() then
             _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); resetToNormal()
             return true
         end
-        if _G.hud:isShowing() then resetToNormal(); return false end
 
-        -- MODIFIED: Check isEscapeMenuEnabled
-        if isHudEnabled and isEscapeMenuEnabled and not isEditMode and not isCurrentAppDisabled() then
-            resetToNormal(); presentHud(indexMenu.title, indexMenu.text, colorTitle); return false
+        -- B. If HUD is open OR Buffer has text -> Just Reset (Don't show menu yet)
+        if _G.hud:isShowing() or #keyHistory > 0 then
+            resetToNormal()
+            return false -- Pass Escape to app (to exit Vim modes)
         end
+
+        -- C. If Buffer is ALREADY empty -> Show the Menu (Help)
+        if isHudEnabled and not isEditMode and not isCurrentAppDisabled() then
+            presentHud(indexMenu.title, indexMenu.text, colorTitle)
+            return false
+        end
+
         return false
     end
 
