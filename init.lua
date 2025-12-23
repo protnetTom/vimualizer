@@ -1,5 +1,5 @@
 -- =================================================
--- VIM HUD: FIXED EXCLUSION REFRESH
+-- VIMUALIZER: ROBUST SAVING & LOADING
 -- =================================================
 
 -- 1. CLEANUP
@@ -21,6 +21,10 @@ local styledtext = require("hs.styledtext")
 local drawing = require("hs.drawing")
 local window = require("hs.window")
 local application = require("hs.application")
+local json = require("hs.json")
+local alert = require("hs.alert")
+local fs = require("hs.fs")
+local console = require("hs.console")
 
 -- ================= CONFIGURATION =================
 
@@ -59,6 +63,7 @@ local colorAccent = { red=1, green=0.4, blue=0.4, alpha=1 }
 local colorInfo = { white=1, alpha=0.95 }
 local colorDrag = { red=0.2, green=0.8, blue=0.2, alpha=0.9 }
 local btnColorAction = {red=0.2, green=0.4, blue=0.8, alpha=1}
+local btnColorSave = {red=0.2, green=0.6, blue=0.2, alpha=1}
 local btnColorExclude = {red=0.8, green=0.2, blue=0.2, alpha=1}
 local panelColor = { red=0.1, green=0.1, blue=0.1, alpha=0.98 }
 local btnColorOn = {red=0.2,green=0.6,blue=0.2,alpha=1}
@@ -81,6 +86,84 @@ local prefX, prefY = (screen.w - prefW) / 2, (screen.h - prefH) / 2
 -- EXCLUSION LIST GEOMETRY
 local exclW, exclH = 500, 600
 local exclX, exclY = prefX + prefW + 20, prefY
+
+-- =================================================
+-- PERSISTENCE LOGIC (DOCUMENTS/VIMUALIZER)
+-- =================================================
+local homeDir = os.getenv("HOME")
+local saveDir = homeDir .. "/Documents/Vimualizer"
+local settingsFilePath = saveDir .. "/settings.json"
+
+local function ensureDirectoryExists()
+    local attrs = fs.attributes(saveDir)
+    if not attrs then
+        fs.mkdir(saveDir)
+    end
+end
+
+local function saveSettings()
+    ensureDirectoryExists()
+
+    -- Clean exclusion list for JSON (ensure purely boolean values)
+    local cleanExclusions = {}
+    for k, v in pairs(excludedApps) do
+        if v == true then cleanExclusions[k] = true end
+    end
+
+    local settings = {
+        isMasterEnabled = isMasterEnabled,
+        isHudEnabled = isHudEnabled,
+        isBufferEnabled = isBufferEnabled,
+        isActionInfoEnabled = isActionInfoEnabled,
+        isAerospaceEnabled = isAerospaceEnabled,
+        excludedApps = cleanExclusions,
+        fontTitleSize = fontTitleSize,
+        fontBodySize = fontBodySize,
+        hudPosIndex = hudPosIndex,
+        customHudX = customHudX,
+        customHudY = customHudY,
+        bufferX = bufferX,
+        bufferY = bufferY
+    }
+
+    -- Write with pretty printing and sorted keys to ensure validity
+    local success, err = pcall(function()
+        return json.write(settings, settingsFilePath, true, true)
+    end)
+
+    if not success then
+        print("Vimualizer Save Error: " .. tostring(err))
+    end
+end
+
+local function loadSettings()
+    local settings = json.read(settingsFilePath)
+    if settings then
+        -- Load Booleans
+        if settings.isMasterEnabled ~= nil then isMasterEnabled = settings.isMasterEnabled end
+        if settings.isHudEnabled ~= nil then isHudEnabled = settings.isHudEnabled end
+        if settings.isBufferEnabled ~= nil then isBufferEnabled = settings.isBufferEnabled end
+        if settings.isActionInfoEnabled ~= nil then isActionInfoEnabled = settings.isActionInfoEnabled end
+        if settings.isAerospaceEnabled ~= nil then isAerospaceEnabled = settings.isAerospaceEnabled end
+
+        -- Load Tables (Safety Check)
+        if settings.excludedApps and type(settings.excludedApps) == "table" then
+            excludedApps = settings.excludedApps
+        end
+
+        -- Load Numbers
+        if settings.fontTitleSize then fontTitleSize = tonumber(settings.fontTitleSize) end
+        if settings.fontBodySize then fontBodySize = tonumber(settings.fontBodySize) end
+        if settings.hudPosIndex then hudPosIndex = tonumber(settings.hudPosIndex) end
+        if settings.customHudX then customHudX = tonumber(settings.customHudX) end
+        if settings.customHudY then customHudY = tonumber(settings.customHudY) end
+        if settings.bufferX then bufferX = tonumber(settings.bufferX) end
+        if settings.bufferY then bufferY = tonumber(settings.bufferY) end
+    end
+end
+
+-- Load immediately on startup
+loadSettings()
 
 -- =================================================
 -- DATA & HELPERS
@@ -310,7 +393,7 @@ local sortedExclusions = {}
 -- 1. INIT MAIN PREFS
 local function initPrefs()
     _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=12, yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
-    _G.prefPanel[2] = { type="text", text="Vim HUD Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="3%",w="100%",h="8%"} }
+    _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="3%",w="100%",h="8%"} }
 
     for i=0,5 do
         local yPos = 11 + (i * 8.5)
@@ -339,9 +422,13 @@ local function initPrefs()
     _G.prefPanel[27] = { type="rectangle", action="fill", frame={x="67%",y="82%",w="23%",h="7%"} }
     _G.prefPanel[28] = { type="text", text="Toggle", textColor={white=1}, textSize=14, textAlignment="center", frame={x="67%",y="82.5%",w="23%",h="7%"} }
 
-    -- OPEN LIST BUTTON
-    _G.prefPanel[29] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="10%",y="91%",w="80%",h="6%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[30] = { type="text", text="Manage Exclusion List >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y="91.5%",w="80%",h="6%"} }
+    -- SAVE BUTTON (LEFT)
+    _G.prefPanel[29] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y="91%",w="35%",h="6%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[30] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y="91.5%",w="35%",h="6%"} }
+
+    -- MANAGE LIST BUTTON (RIGHT)
+    _G.prefPanel[31] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y="91%",w="40%",h="6%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[32] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y="91.5%",w="40%",h="6%"} }
 end
 
 local function updatePrefsVisuals()
@@ -436,10 +523,12 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             -- Sizing with Immediate Feedback
             elseif relY > 0.64 and relY < 0.71 then
                 if relX < 0.3 then fontTitleSize=math.max(10, fontTitleSize-2) else fontTitleSize=math.min(60, fontTitleSize+2) end
-                changed=true; presentHud("Title Size: "..fontTitleSize, previewMenu.text)
+                changed=true; saveSettings(); -- SAVE ON TEXT CHANGE
+                presentHud("Title Size: "..fontTitleSize, previewMenu.text)
             elseif relY > 0.72 and relY < 0.79 then
                 if relX < 0.3 then fontBodySize=math.max(8, fontBodySize-1) else fontBodySize=math.min(40, fontBodySize+1) end
-                changed=true; presentHud("Text Size: "..fontBodySize, previewMenu.text)
+                changed=true; saveSettings(); -- SAVE ON TEXT CHANGE
+                presentHud("Text Size: "..fontBodySize, previewMenu.text)
 
             -- Current App Toggle
             elseif relY > 0.82 and relY < 0.89 and relX > 0.67 then
@@ -452,13 +541,24 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
                     _G.keyBuffer:hide(); _G.hud:hide() -- Hide immediately if excluded
                 end
                 changed=true; if _G.exclPanel:isShowing() then updateExclusionPanel() end
-            -- OPEN LIST BUTTON
+
+            -- BOTTOM ROW (Save & List)
             elseif relY > 0.91 and relY < 0.97 then
-                updateExclusionPanel()
-                _G.exclPanel:show()
+                if relX < 0.45 then
+                    -- Save Button Clicked
+                    saveSettings()
+                    alert.show("Vimualizer Settings Saved", 1)
+                elseif relX > 0.50 then
+                    -- Exclusions Button Clicked
+                    updateExclusionPanel()
+                    _G.exclPanel:show()
+                end
             end
 
-            if changed then timer.doAfter(0, function() updatePrefsVisuals() end) end
+            if changed then
+                saveSettings() -- SAVE ON CHANGE
+                timer.doAfter(0, function() updatePrefsVisuals() end)
+            end
             return true
         end
 
@@ -481,6 +581,7 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
                 local relX = (p.x - eF.x) / eF.w
                 if relX > 0.85 and sortedExclusions[rowIndex] then
                     excludedApps[sortedExclusions[rowIndex]] = nil
+                    saveSettings() -- SAVE ON CHANGE
                     updateExclusionPanel() -- Refresh list
                     updatePrefsVisuals() -- Refresh main toggle if it matches
                 end
@@ -514,8 +615,13 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             _G.keyBuffer:frame({x=newX, y=newY, w=_G.keyBuffer:frame().w, h=_G.keyBuffer:frame().h})
             bufferX, bufferY = newX, newY; return true
         end
-    elseif type == eventtap.event.types.leftMouseUp then dragTarget = nil end
-    return falseGgg
+    elseif type == eventtap.event.types.leftMouseUp then
+        if dragTarget then
+            saveSettings() -- SAVE ON DRAG END
+        end
+        dragTarget = nil
+    end
+    return false
 end):start()
 
 hotkey.bind({"cmd", "alt"}, "P", function()
@@ -561,23 +667,17 @@ end):start()
 _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
     local flags = e:getFlags(); local keyCode = e:getKeyCode(); local keyName = keycodes.map[keyCode]
 
--- 1. GLOBAL ESCAPE HANDLER
+    -- 1. GLOBAL ESCAPE HANDLER
     if keyName == "escape" or (flags.ctrl and keyName == "[") then
-        -- Keep these as 'return true' so closing the settings panels doesn't trigger things in your app
         if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
         if _G.prefPanel:isShowing() then
             _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); resetToNormal()
             return true
         end
-
-        -- FIX 1: If HUD is showing, reset, but return FALSE so the app hears Escape too
         if _G.hud:isShowing() then resetToNormal(); return false end
-
-        -- FIX 2: Default Behavior. Reset buffer/show menu, but return FALSE so app hears Escape
         if isHudEnabled and not isEditMode and not isCurrentAppDisabled() then
             resetToNormal(); presentHud(indexMenu.title, indexMenu.text, colorTitle); return false
         end
-
         return false
     end
 
@@ -610,5 +710,5 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
     return false
 end):start()
 
-hs.alert.show("Vim HUD: Fixed Exclusion Refresh")
+hs.alert.show("Vimualizer Loaded")
 updateBufferGeometry(); updateStateDisplay(); if isBufferEnabled then _G.keyBuffer:show() end
