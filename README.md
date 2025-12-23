@@ -58,6 +58,31 @@ Open your terminal and jump to the config directory:
 
 ---
 
+## 📦 Automated Installation
+
+We provide a helper script to automate the setup process. This script handles dependency installation (Homebrew, Hammerspoon) and configuration file placement.
+
+**⚠️ DISCLAIMER: Use at your own risk.**
+This script makes changes to your system configuration and overwrites your Hammerspoon `init.lua` file. Always review scripts before running them on your machine.
+
+### Instructions
+
+1. Download `init.lua` (the Vimualizer source code) and `install.sh` to the same folder.
+2. Open your terminal and navigate to that folder.
+3. Make the script executable:
+   ```bash
+   chmod +x install.sh
+   ```
+4. Run the installer:
+   ```bash
+   ./install.sh
+   ```
+5. Launch **Hammerspoon** from your Applications folder.
+
+*Note: If you already use Hammerspoon, your existing config will be backed up to `~/.hammerspoon/init.lua.bak`.*
+
+---
+
 ## 🎮 How to Drive
 
 | Action | Trigger | The Vibe |
