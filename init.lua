@@ -1,5 +1,5 @@
 -- =================================================
--- VIM HUD: DUAL WINDOW EDITION
+-- VIM HUD: FIXED FONT RESIZING
 -- =================================================
 
 -- 1. CLEANUP
@@ -10,7 +10,7 @@ if _G.interactionWatcher then _G.interactionWatcher:stop() end
 if _G.hud then _G.hud:delete() end
 if _G.keyBuffer then _G.keyBuffer:delete() end
 if _G.prefPanel then _G.prefPanel:delete() end
-if _G.exclPanel then _G.exclPanel:delete() end -- New Cleanup
+if _G.exclPanel then _G.exclPanel:delete() end
 
 local canvas = require("hs.canvas")
 local eventtap = require("hs.eventtap")
@@ -80,7 +80,7 @@ local prefX, prefY = (screen.w - prefW) / 2, (screen.h - prefH) / 2
 
 -- EXCLUSION LIST GEOMETRY
 local exclW, exclH = 500, 600
-local exclX, exclY = prefX + prefW + 20, prefY -- Default to right of prefs
+local exclX, exclY = prefX + prefW + 20, prefY
 
 -- =================================================
 -- DATA & HELPERS
@@ -105,18 +105,90 @@ local function getCurrentAppInfo()
     return app:name(), app:bundleID()
 end
 
--- (Shortened Logic Helpers for brevity - Logic remains same as previous versions)
+-- VIM DEFINITIONS
 local vimOps = { d="Delete", c="Change", y="Yank", v="Select", [">"]="Indent", ["<"]="Outdent", ["="]="Format" }
 local vimContext = { i="Inside", a="Around" }
-local simpleActions = { u="Undo", ["^r"]="Redo", x="Del Char", i="Insert", a="Append", o="Open", p="Paste", ["/"]="Search", [":"]="Cmd" }
+local vimObjects = {
+    w="Word", W="WORD", p="Paragraph", s="Sentence", t="Tag",
+    ["("]="Parens", [")"]="Parens", b="Parens",
+    ["{"]="Braces", ["}"]="Braces", B="Braces",
+    ["["]="Brackets", ["]"]="Brackets",
+    ["<"]="Angle Brackets", [">"]="Angle Brackets",
+    ["'"]="Quotes", ['"']="Double Quotes", ["`"]="Backticks"
+}
+local vimMotions = {
+    h="Left", j="Down", k="Up", l="Right",
+    w="Word", b="Back", e="End Word",
+    ["0"]="Start Line", ["$"]="End Line", ["^"]="First Char",
+    G="Bottom", H="Top Screen", M="Mid Screen", L="Bot Screen"
+}
+local argMotions = { f="Find", F="Find Back", t="Until", T="Until Back", r="Replace", m="Mark", ["`"]="Jump Mark", ["'"]="Jump Mark Line" }
+local simpleActions = {
+    u="Undo", ["^r"]="Redo", x="Delete Char", s="Sub Char",
+    i="Insert Mode", a="Append", o="Open Below",
+    I="Insert Start", A="Append End", O="Open Above",
+    p="Paste After", P="Paste Before",
+    J="Join Lines", D="Delete to End", C="Change to End", Y="Yank Line",
+    ["/"]="Search", ["?"]="Search Back", n="Next Match", N="Prev Match",
+    [":"]="Command Line", ["%"]="Match Bracket", ["*"]="Find Word Under",
+    ["~"]="Toggle Case", ["."]="Repeat Last",
+    ["{"]="Prev Paragraph", ["}"]="Next Paragraph",
+    -- Window / Aerospace Actions
+    ["⌥h"]="Focus Left", ["⌥j"]="Focus Down", ["⌥k"]="Focus Up", ["⌥l"]="Focus Right",
+    ["⌥⇧h"]="Move Left", ["⌥⇧j"]="Move Down", ["⌥⇧k"]="Move Up", ["⌥⇧l"]="Move Right",
+    ["⌥f"]="Toggle Float", ["⌥s"]="Layout Stack", ["⌥/"]="Vertical Split", ["⌥-"]="Horizontal Split",
+    ["⌥tab"]="Next Workspace", ["⌥comma"]="Layout Tiles"
+}
+
+-- MENUS
+local insertTriggers = { ["i"]=true, ["I"]=true, ["a"]=true, ["A"]=true, ["o"]=true, ["O"]=true, ["s"]=true, ["S"]=true, ["C"]=true }
+local visualTriggers = { ["v"]=true, ["V"]=true, ["^v"]=true }
+
+local indexMenu = { title = "Vim Entry Points", text = "-- Operators --\nd : Delete Actions\nc : Change Actions\ny : Yank (Copy)\np : Paste\n-- Modes --\nv : Visual Char Mode\nV : Visual Line Mode\n^v : Visual Block Mode\n-- Navigation --\ng : Go / Extended\nz : Folds / View\nm : Marks\n/ : Search" }
+local previewMenu = { title = "Visual Preview", text = "-- Section Header --\nkey : description text\ncmd : another command\n-- Another Section --\ntest : checking font size" }
+
+local modifierMenus = {
+    shift = { title = "Shift Held (Upper Case)", text = "-- Operators --\nD : Delete rest of line\nC : Change rest of line\nY : Yank line (yy)\n-- Insert --\nI : Insert at START\nA : Insert at END\nO : Insert line ABOVE\n-- Modes --\nV : Visual LINE Mode" },
+    ctrl = { title = "Ctrl Held (Commands)", text = "-- Visual --\n^v : Visual BLOCK Mode\n-- Window --\n^w : Window Splits...\n-- Navigation --\n^d : Scroll Down\n^u : Scroll Up\n^o : Jump Back\n^i : Jump Forward" },
+    alt = { title = "Aerospace (Option)", text = "-- Focus --\nh/j/k/l : Focus Window\n-- Move --\n⇧ + h/j/k/l : Move Window\n-- Layout --\n/ : Vertical Split\n- : Horizontal Split\ns : Layout Stack\nf : Toggle Floating\n, : Layout Tiles\n-- Workspaces --\n1-9 : Switch Workspace\n⇧ + 1-9 : Move to Workspace\nTab : Next Workspace" }
+}
+
+local triggers = {
+    d = { title = "Delete (d...)", text = "-- Basics --\ndd : Entire line\nD : Rest of line (d$)\n-- Objects --\ndw : Next word\ndiw : Inner word\ndi\" : Inside quotes\ndi( : Inside parens\ndt{x} : Delete until {x}" },
+    c = { title = "Change (c...)", text = "-- Basics --\ncc : Entire line\nC : Rest of line (c$)\ncw : Change word\n-- Objects --\nciw : Change inner word\nci\" : Change inside quotes\nci( : Change inside parens" },
+    y = { title = "Yank/Copy (y...)", text = "-- Basics --\nyy : Entire line\ny$ : To end of line\np/P : Paste after/before\n-- Objects --\nyiw : Inner word\nyip : Inner paragraph" },
+    v = { title = "Visual Char (v)", text = "v : Start selection\no : Swap cursor end\n-- Actions --\nd/y : Delete / Yank\n~ : Toggle Case\n>/< : Indent / Dedent" },
+    V = { title = "Visual Line (Shift+v)", text = "V : Start Line Mode\nj/k : Extend selection\n} : Extend Paragraph\n= : Auto-indent\nJ : Join lines" },
+    ["^v"] = { title = "Visual Block (Ctrl+v)", text = "^v : Start Block Mode\nI : Insert on ALL lines\nA : Append on ALL lines\nc : Change block\n$ : Extend to end" },
+    g = { title = "Go / Extended (g...)", text = "-- Nav --\ngg : Top of file\nG : Bottom of file\ngi : Last insert spot\ngv : Reselect Visual\ngd : Go definition\n-- Format --\ngq : Format paragraph\ngu/gU : Lower/Upper case" },
+    z = { title = "Folds & View (z...)", text = "-- Scroll --\nzz : Center screen\nzt/zb : Top/Bottom screen\n-- Folds --\nzo/zc : Open/Close fold\nza : Toggle fold\nzM/zR : Close/Open ALL" },
+    m = { title = "Marks (m...)", text = "m{a-z} : Set local mark\nm{A-Z} : Set GLOBAL mark\n'{a-z} : Jump to mark line\n`{a-z} : Jump to mark pos" },
+    ["^w"] = { title = "Window (Ctrl+w ...)", text = "-- Split --\nv/s : Vert/Horiz Split\n-- Move --\nh/j/k/l : Move Focus\nw : Cycle\n-- Actions --\nc : Close Window\n= : Equalize sizes" },
+}
 
 local function getSequenceDescription()
     local len = #keyHistory
     if len == 0 then return "" end
+
     local k1 = keyHistory[len]
-    -- Simple fallback logic for visualizer
-    if vimOps[k1] then return vimOps[k1].."..." end
-    return simpleActions[k1] or ""
+    local k2 = (len >= 2) and keyHistory[len-1] or nil
+    local k3 = (len >= 3) and keyHistory[len-2] or nil
+
+    if k3 and k2 and k1 then
+        if vimOps[k3] and vimContext[k2] then
+            local objName = vimObjects[k1] or ("'" .. k1 .. "'")
+            return vimOps[k3] .. " " .. vimContext[k2] .. " " .. objName
+        end
+    end
+    if k2 and k1 then
+        if argMotions[k2] then return argMotions[k2] .. " '" .. k1 .. "'" end
+        if vimOps[k2] and vimContext[k1] then return vimOps[k2] .. " " .. vimContext[k1] .. "..." end
+        if vimOps[k2] and k2 == k1 then return vimOps[k2] .. " Line" end
+    end
+    if k1 and vimOps[k1] then return vimOps[k1] .. "..." end
+    local desc = simpleActions[k1] or vimMotions[k1]
+    if not desc and #k1 > 1 and k1:sub(1,1) == "^" then desc = "Ctrl + " .. k1:sub(2) end
+    return desc or ""
 end
 
 local function formatHudBody(rawText)
@@ -154,6 +226,8 @@ _G.keyBuffer[3] = { type="text", text="", textColor=bufferTxtColor, textSize=34,
 _G.keyBuffer[4] = { type="text", text="", textColor=colorInfo, textSize=15, textAlignment="right", frame={x="25%",y="60%",w="70%",h="30%"} }
 _G.keyBuffer[5] = { type="rectangle", action="skip", fillColor=colorDrag, roundedRectRadii={xRadius=8,yRadius=8}, frame={x=0,y=0,w="100%",h=20} }
 _G.keyBuffer[6] = { type="text", action="skip", text="DRAG ME", textSize=10, textColor={white=1}, textAlignment="center", frame={x=0,y=5,w="100%",h=10} }
+
+local hudTimer = nil
 
 local function updateBufferGeometry()
     if isActionInfoEnabled then
@@ -195,16 +269,32 @@ local function updateDragHandles()
     updateBufferGeometry()
 end
 
-local function presentHud(title, rawBodyText)
-    local styledTitle = styledtext.new(title, { font={name=".AppleSystemUIFontBold", size=fontTitleSize}, color=colorTitle })
+local function presentHud(title, rawBodyText, titleOverrideColor)
+    local styledTitle = styledtext.new(title, { font={name=".AppleSystemUIFontBold", size=fontTitleSize}, color=titleOverrideColor or colorTitle })
     local styledBody = formatHudBody(rawBodyText)
-    -- (Auto resize logic omitted for brevity, assumes standard size)
-    local newW, newH = 400, 300
-    local newX, newY = (screen.w - newW)/2, (screen.h - newH)/2
-    if hudPosIndex == 1 then newX, newY = 150, (screen.h - newH)/2 end
+
+    local innerMaxW = maxHudWidth - (hudPadding * 2)
+    local titleSize = drawing.getTextDrawingSize(styledTitle, {w=innerMaxW})
+    local bodySize = {w=0, h=0}
+    if rawBodyText and rawBodyText ~= "" then bodySize = drawing.getTextDrawingSize(styledBody, {w=innerMaxW}) end
+    local contentW = math.max(titleSize.w, bodySize.w)
+    local newW = math.max(minHudWidth, contentW + (hudPadding * 2))
+    local titleH = titleSize.h
+    local bodyH = bodySize.h
+    local spacer = (bodyH > 0) and 15 or 0
+    local newH = hudPadding + titleH + spacer + bodyH + hudPadding
+    if isEditMode then newH = newH + 20 end
+
+    local newX, newY = 150, 100
+    if hudPosIndex == 1 then newX, newY = 150, (screen.h - newH) / 2
+    elseif hudPosIndex == 2 then newX, newY = screen.w - newW - 50, 50
+    elseif hudPosIndex == 3 then newX, newY = screen.w - newW - 50, screen.h - newH - 50
+    elseif hudPosIndex == 4 then newX, newY = (screen.w - newW) / 2, (screen.h - newH) / 2
+    elseif hudPosIndex == 5 then newX, newY = customHudX, customHudY end
+
     _G.hud:frame({x=newX, y=newY, w=newW, h=newH})
-    _G.hud[2].text = styledTitle; _G.hud[2].frame = {x=hudPadding,y=hudPadding,w=newW,h=40};
-    _G.hud[3].text = styledBody; _G.hud[3].frame = {x=hudPadding,y=hudPadding+40,w=newW,h=newH};
+    _G.hud[2].text = styledTitle; _G.hud[2].frame = {x=hudPadding,y=hudPadding,w=newW-(hudPadding*2),h=titleH};
+    _G.hud[3].text = styledBody; _G.hud[3].frame = {x=hudPadding,y=hudPadding+titleH+spacer,w=newW-(hudPadding*2),h=bodyH};
     updateDragHandles()
     _G.hud:show()
 end
@@ -215,7 +305,7 @@ end
 _G.prefPanel = canvas.new({x=prefX, y=prefY, w=prefW, h=prefH}):level(hs.canvas.windowLevels.floating)
 _G.exclPanel = canvas.new({x=exclX, y=exclY, w=exclW, h=exclH}):level(hs.canvas.windowLevels.floating)
 
-local sortedExclusions = {} -- Shared sort list
+local sortedExclusions = {}
 
 -- 1. INIT MAIN PREFS
 local function initPrefs()
@@ -342,9 +432,15 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             elseif relY > 0.36 and relY < 0.42 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
             elseif relY > 0.45 and relY < 0.51 then isMasterEnabled = not isMasterEnabled; changed=true
             elseif relY > 0.53 and relY < 0.59 then hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end; changed=true
-            -- Sizing
-            elseif relY > 0.64 and relY < 0.71 then if relX < 0.3 then fontTitleSize=fontTitleSize-2 else fontTitleSize=fontTitleSize+2 end; changed=true
-            elseif relY > 0.72 and relY < 0.79 then if relX < 0.3 then fontBodySize=fontBodySize-1 else fontBodySize=fontBodySize+1 end; changed=true
+
+            -- Sizing with Immediate Feedback
+            elseif relY > 0.64 and relY < 0.71 then
+                if relX < 0.3 then fontTitleSize=math.max(10, fontTitleSize-2) else fontTitleSize=math.min(60, fontTitleSize+2) end
+                changed=true; presentHud("Title Size: "..fontTitleSize, previewMenu.text)
+            elseif relY > 0.72 and relY < 0.79 then
+                if relX < 0.3 then fontBodySize=math.max(8, fontBodySize-1) else fontBodySize=math.min(40, fontBodySize+1) end
+                changed=true; presentHud("Text Size: "..fontBodySize, previewMenu.text)
+
             -- Current App Toggle
             elseif relY > 0.82 and relY < 0.89 and relX > 0.67 then
                 local _, appID = getCurrentAppInfo()
@@ -389,7 +485,10 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         -- C. DRAGGING HUD/BUFFER
         local hF = _G.hud:frame()
         if _G.hud:isShowing() and p.x >= hF.x and p.x <= (hF.x + hF.w) and p.y >= hF.y and p.y <= (hF.y + hF.h) then
-            dragTarget="hud"; dragOffset={x=p.x-hF.x, y=p.y-hF.y}; hudPosIndex=5; updatePrefsVisuals(); return true
+            dragTarget="hud"; dragOffset={x=p.x-hF.x, y=p.y-hF.y};
+            hudPosIndex=5; -- Force to Custom Position
+            updatePrefsVisuals();
+            return true
         end
         local bF = _G.keyBuffer:frame()
         if _G.keyBuffer:isShowing() and p.x >= bF.x and p.x <= (bF.x + bF.w) and p.y >= bF.y and p.y <= (bF.y + bF.h) then
@@ -400,15 +499,22 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         _G.prefPanel:hide(); _G.exclPanel:hide(); _G.hud:hide(); isEditMode=false; updateDragHandles(); resetToNormal(); return false
 
     elseif type == eventtap.event.types.leftMouseDragged then
-        if dragTarget == "hud" then _G.hud:setTopLeft({x=p.x-dragOffset.x, y=p.y-dragOffset.y}); customHudX, customHudY = p.x-dragOffset.x, p.y-dragOffset.y; return true
-        elseif dragTarget == "buffer" then _G.keyBuffer:setTopLeft({x=p.x-dragOffset.x, y=p.y-dragOffset.y}); bufferX, bufferY = p.x-dragOffset.x, p.y-dragOffset.y; return true end
+        if dragTarget == "hud" then
+            local newX, newY = p.x - dragOffset.x, p.y - dragOffset.y
+            _G.hud:frame({x=newX, y=newY, w=_G.hud:frame().w, h=_G.hud:frame().h})
+            customHudX, customHudY = newX, newY; return true
+        elseif dragTarget == "buffer" then
+            local newX, newY = p.x - dragOffset.x, p.y - dragOffset.y
+            _G.keyBuffer:frame({x=newX, y=newY, w=_G.keyBuffer:frame().w, h=_G.keyBuffer:frame().h})
+            bufferX, bufferY = newX, newY; return true
+        end
     elseif type == eventtap.event.types.leftMouseUp then dragTarget = nil end
     return false
 end):start()
 
 hotkey.bind({"cmd", "alt"}, "P", function()
     if _G.prefPanel:isShowing() then _G.prefPanel:hide(); _G.exclPanel:hide(); isEditMode = false; updateDragHandles(); resetToNormal()
-    else updatePrefsVisuals(); isEditMode = true; _G.prefPanel:show(); _G.keyBuffer:show(); presentHud("Preview", "Drag to move..."); updateDragHandles() end
+    else updatePrefsVisuals(); isEditMode = true; _G.prefPanel:show(); _G.keyBuffer:show(); presentHud("Preview", previewMenu.text); updateDragHandles() end
 end)
 
 -- =================================================
@@ -424,22 +530,75 @@ end):start()
 
 _G.modWatcher = eventtap.new({eventtap.event.types.flagsChanged}, function(e)
     if not isMasterEnabled or isEditMode or currentState == VIM_STATE.INSERT or isCurrentAppDisabled() then return false end
-    -- (Simplified mod logic for brevity - Insert full logic from previous scripts if needed)
+    local flags = e:getFlags()
+
+    if flags.alt and isAerospaceEnabled then
+        presentHud(modifierMenus.alt.title, modifierMenus.alt.text, colorAccent)
+        if hudTimer then hudTimer:stop() end
+    elseif flags.shift then
+        presentHud(modifierMenus.shift.title, modifierMenus.shift.text, colorAccent)
+        if hudTimer then hudTimer:stop() end
+    elseif flags.ctrl then
+        presentHud(modifierMenus.ctrl.title, modifierMenus.ctrl.text, colorAccent)
+        if hudTimer then hudTimer:stop() end
+    else
+        if _G.hud:isShowing() then
+            local currentTitle = _G.hud[2].text:getString()
+            if currentTitle == modifierMenus.shift.title or currentTitle == modifierMenus.ctrl.title or currentTitle == modifierMenus.alt.title then
+                _G.hud:hide()
+            end
+        end
+    end
     return false
 end):start()
 
 _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
-    local keyName = keycodes.map[e:getKeyCode()]
-    if keyName == "escape" then
+    local flags = e:getFlags(); local keyCode = e:getKeyCode(); local keyName = keycodes.map[keyCode]
+
+    -- 1. GLOBAL ESCAPE HANDLER
+    if keyName == "escape" or (flags.ctrl and keyName == "[") then
         if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
-        if _G.prefPanel:isShowing() then _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); return true end
+        if _G.prefPanel:isShowing() then
+            _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); resetToNormal()
+            return true
+        end
         if _G.hud:isShowing() then resetToNormal(); return true end
+
+        -- Default Escape Behavior (Reset Buffer + Show Entry Points)
+        if isHudEnabled and not isEditMode and not isCurrentAppDisabled() then
+            resetToNormal(); presentHud(indexMenu.title, indexMenu.text, colorTitle); return true
+        end
+        return false
     end
-    -- (Standard Vim Logic here - Keeping existing behavior)
+
     if not isMasterEnabled or isEditMode or isCurrentAppDisabled() then return false end
-    -- ... (Logic omitted to save space, copy from previous script if standard vim logic needed) ...
+    local char = e:getCharacters()
+
+    if isAerospaceEnabled and flags.alt then
+         local cleanKey = keyName
+         if flags.shift then cleanKey = "⇧"..cleanKey end
+         local displayStr = "⌥"..cleanKey
+         addToBuffer(displayStr)
+         return false
+    end
+
+    if currentState == VIM_STATE.INSERT then return false end
+    local bufferChar = char; if keyName=="space" then bufferChar="␣" elseif keyName=="return" then bufferChar="↵" elseif keyName=="backspace" then bufferChar="⌫" elseif flags.ctrl then bufferChar="^"..(keyName or "?") end
+
+    if insertTriggers[bufferChar] then currentState = VIM_STATE.INSERT; addToBuffer(bufferChar); return false end
+    if bufferChar == "c" and currentState == VIM_STATE.NORMAL then currentState = VIM_STATE.PENDING_CHANGE; addToBuffer("c"); if isHudEnabled then presentHud(triggers.c.title, triggers.c.text, colorAccent) end; return false end
+    if currentState == VIM_STATE.PENDING_CHANGE then currentState = VIM_STATE.INSERT; addToBuffer(bufferChar); _G.hud:hide(); return false end
+    if visualTriggers[bufferChar] then currentState = VIM_STATE.VISUAL; addToBuffer(bufferChar); if isHudEnabled then local vMenu = triggers[bufferChar] or triggers.v; presentHud(vMenu.title, vMenu.text, colorTitle) end; return false end
+
+    if currentState == VIM_STATE.NORMAL or currentState == VIM_STATE.VISUAL then
+        if bufferChar and #bufferChar > 0 and #bufferChar < 5 then addToBuffer(bufferChar) end
+        if isHudEnabled then
+            local lookup = bufferChar; if flags.ctrl and keyName then lookup = "^"..keyName end
+            if triggers[lookup] then presentHud(triggers[lookup].title, triggers[lookup].text); if hudTimer then hudTimer:stop() end; hudTimer = timer.doAfter(displayTime, function() _G.hud:hide() end) end
+        end
+    end
     return false
 end):start()
 
-hs.alert.show("Vim HUD: Dual Window Config Ready")
+hs.alert.show("Vim HUD: Complete Version Ready")
 updateBufferGeometry(); updateStateDisplay(); if isBufferEnabled then _G.keyBuffer:show() end
