@@ -1,5 +1,5 @@
 -- =================================================
--- VIM HUD: FIXED FONT RESIZING
+-- VIM HUD: FIXED EXCLUSION REFRESH
 -- =================================================
 
 -- 1. CLEANUP
@@ -444,7 +444,13 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             -- Current App Toggle
             elseif relY > 0.82 and relY < 0.89 and relX > 0.67 then
                 local _, appID = getCurrentAppInfo()
-                if excludedApps[appID] then excludedApps[appID] = nil else excludedApps[appID] = true end
+                if excludedApps[appID] then
+                    excludedApps[appID] = nil
+                    if isBufferEnabled then _G.keyBuffer:show() end -- Show if un-excluded
+                else
+                    excludedApps[appID] = true
+                    _G.keyBuffer:hide(); _G.hud:hide() -- Hide immediately if excluded
+                end
                 changed=true; if _G.exclPanel:isShowing() then updateExclusionPanel() end
             -- OPEN LIST BUTTON
             elseif relY > 0.91 and relY < 0.97 then
@@ -509,7 +515,7 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             bufferX, bufferY = newX, newY; return true
         end
     elseif type == eventtap.event.types.leftMouseUp then dragTarget = nil end
-    return false
+    return falseGgg
 end):start()
 
 hotkey.bind({"cmd", "alt"}, "P", function()
@@ -555,19 +561,23 @@ end):start()
 _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
     local flags = e:getFlags(); local keyCode = e:getKeyCode(); local keyName = keycodes.map[keyCode]
 
-    -- 1. GLOBAL ESCAPE HANDLER
+-- 1. GLOBAL ESCAPE HANDLER
     if keyName == "escape" or (flags.ctrl and keyName == "[") then
+        -- Keep these as 'return true' so closing the settings panels doesn't trigger things in your app
         if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
         if _G.prefPanel:isShowing() then
             _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); resetToNormal()
             return true
         end
-        if _G.hud:isShowing() then resetToNormal(); return true end
 
-        -- Default Escape Behavior (Reset Buffer + Show Entry Points)
+        -- FIX 1: If HUD is showing, reset, but return FALSE so the app hears Escape too
+        if _G.hud:isShowing() then resetToNormal(); return false end
+
+        -- FIX 2: Default Behavior. Reset buffer/show menu, but return FALSE so app hears Escape
         if isHudEnabled and not isEditMode and not isCurrentAppDisabled() then
-            resetToNormal(); presentHud(indexMenu.title, indexMenu.text, colorTitle); return true
+            resetToNormal(); presentHud(indexMenu.title, indexMenu.text, colorTitle); return false
         end
+
         return false
     end
 
@@ -600,5 +610,5 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
     return false
 end):start()
 
-hs.alert.show("Vim HUD: Complete Version Ready")
+hs.alert.show("Vim HUD: Fixed Exclusion Refresh")
 updateBufferGeometry(); updateStateDisplay(); if isBufferEnabled then _G.keyBuffer:show() end
