@@ -33,7 +33,8 @@ local isHudEnabled = true
 local isBufferEnabled = true
 local isActionInfoEnabled = true
 local isAerospaceEnabled = false
-local isEscapeMenuEnabled = true -- NEW SETTING
+local isEscapeMenuEnabled = true
+local isMacroEnabled = true -- NEW SETTING: Macro Recording
 local isEditMode = false
 
 -- App Exclusion List (Bundle IDs)
@@ -69,6 +70,7 @@ local btnColorExclude = {red=0.8, green=0.2, blue=0.2, alpha=1}
 local panelColor = { red=0.1, green=0.1, blue=0.1, alpha=0.98 }
 local btnColorOn = {red=0.2,green=0.6,blue=0.2,alpha=1}
 local btnColorOff = {red=0.6,green=0.2,blue=0.2,alpha=1}
+local colorRec = { red=1, green=0.2, blue=0.2, alpha=1 } -- RED for Recording
 
 local screen = hs.screen.mainScreen():frame()
 
@@ -81,7 +83,7 @@ local bufferTxtColor = { red=0.6, green=1, blue=0.6, alpha=1 }
 local dimColor = { red=0.5, green=0.5, blue=0.5, alpha=1 }
 
 -- MAIN PREFS GEOMETRY
-local prefW, prefH = 450, 780
+local prefW, prefH = 450, 820 -- Increased Height slightly
 local prefX, prefY = (screen.w - prefW) / 2, (screen.h - prefH) / 2
 
 -- EXCLUSION LIST GEOMETRY
@@ -117,7 +119,8 @@ local function saveSettings()
         isBufferEnabled = isBufferEnabled,
         isActionInfoEnabled = isActionInfoEnabled,
         isAerospaceEnabled = isAerospaceEnabled,
-        isEscapeMenuEnabled = isEscapeMenuEnabled, -- SAVE NEW SETTING
+        isEscapeMenuEnabled = isEscapeMenuEnabled,
+        isMacroEnabled = isMacroEnabled, -- SAVE MACRO SETTING
         excludedApps = cleanExclusions,
         fontTitleSize = fontTitleSize,
         fontBodySize = fontBodySize,
@@ -146,7 +149,8 @@ local function loadSettings()
         if settings.isBufferEnabled ~= nil then isBufferEnabled = settings.isBufferEnabled end
         if settings.isActionInfoEnabled ~= nil then isActionInfoEnabled = settings.isActionInfoEnabled end
         if settings.isAerospaceEnabled ~= nil then isAerospaceEnabled = settings.isAerospaceEnabled end
-        if settings.isEscapeMenuEnabled ~= nil then isEscapeMenuEnabled = settings.isEscapeMenuEnabled end -- LOAD NEW SETTING
+        if settings.isEscapeMenuEnabled ~= nil then isEscapeMenuEnabled = settings.isEscapeMenuEnabled end
+        if settings.isMacroEnabled ~= nil then isMacroEnabled = settings.isMacroEnabled end -- LOAD MACRO SETTING
 
         -- Load Tables (Safety Check)
         if settings.excludedApps and type(settings.excludedApps) == "table" then
@@ -173,6 +177,10 @@ loadSettings()
 local VIM_STATE = { NORMAL="NORMAL", INSERT="INSERT", VISUAL="VISUAL", PENDING_CHANGE="PENDING_CHANGE" }
 local currentState = VIM_STATE.NORMAL
 local keyHistory = {}
+
+-- MACRO STATE VARIABLES
+local recordingRegister = nil -- Will hold 'a', 'b', etc if recording, nil if not
+local pendingMacroStart = false -- True if 'q' was just pressed in Normal mode
 
 local function isCurrentAppDisabled()
     local win = window.focusedWindow()
@@ -229,7 +237,7 @@ local simpleActions = {
 local insertTriggers = { ["i"]=true, ["I"]=true, ["a"]=true, ["A"]=true, ["o"]=true, ["O"]=true, ["s"]=true, ["S"]=true, ["C"]=true }
 local visualTriggers = { ["v"]=true, ["V"]=true, ["^v"]=true }
 
-local indexMenu = { title = "Vim Entry Points", text = "-- Operators --\nd : Delete Actions\nc : Change Actions\ny : Yank (Copy)\np : Paste\n-- Modes --\nv : Visual Char Mode\nV : Visual Line Mode\n^v : Visual Block Mode\n-- Navigation --\ng : Go / Extended\nz : Folds / View\nm : Marks\n/ : Search" }
+local indexMenu = { title = "Vim Entry Points", text = "-- Operators --\nd : Delete Actions\nc : Change Actions\ny : Yank (Copy)\np : Paste\n-- Modes --\nv : Visual Char Mode\nV : Visual Line Mode\n^v : Visual Block Mode\n-- Macros --\nq : Record Macro\n-- Navigation --\ng : Go / Extended\nz : Folds / View\nm : Marks\n/ : Search" }
 local previewMenu = { title = "Visual Preview", text = "-- Section Header --\nkey : description text\ncmd : another command\n-- Another Section --\ntest : checking font size" }
 
 local modifierMenus = {
@@ -248,6 +256,7 @@ local triggers = {
     g = { title = "Go / Extended (g...)", text = "-- Nav --\ngg : Top of file\nG : Bottom of file\ngi : Last insert spot\ngv : Reselect Visual\ngd : Go definition\n-- Format --\ngq : Format paragraph\ngu/gU : Lower/Upper case" },
     z = { title = "Folds & View (z...)", text = "-- Scroll --\nzz : Center screen\nzt/zb : Top/Bottom screen\n-- Folds --\nzo/zc : Open/Close fold\nza : Toggle fold\nzM/zR : Close/Open ALL" },
     m = { title = "Marks (m...)", text = "m{a-z} : Set local mark\nm{A-Z} : Set GLOBAL mark\n'{a-z} : Jump to mark line\n`{a-z} : Jump to mark pos" },
+    q = { title = "Macros (q)", text = "q{a-z} : Record to register\nq : Stop recording\n@{a-z} : Replay macro\n@@ : Replay last macro" },
     ["^w"] = { title = "Window (Ctrl+w ...)", text = "-- Split --\nv/s : Vert/Horiz Split\n-- Move --\nh/j/k/l : Move Focus\nw : Cycle\n-- Actions --\nc : Close Window\n= : Equalize sizes" },
 }
 
@@ -326,9 +335,18 @@ end
 
 local function updateStateDisplay()
     local stateText, color = currentState, colorTitle
-    if currentState == VIM_STATE.INSERT then color = {red=0.4, green=1, blue=0.4, alpha=1}
-    elseif currentState == VIM_STATE.VISUAL then color = {red=1, green=0.6, blue=0.2, alpha=1}
-    elseif currentState == VIM_STATE.PENDING_CHANGE then stateText = "PENDING"; color = colorAccent end
+
+    -- Handle Macro Status Overlay
+    if recordingRegister then
+        stateText = "REC @" .. recordingRegister
+        color = colorRec
+    elseif currentState == VIM_STATE.INSERT then
+        color = {red=0.4, green=1, blue=0.4, alpha=1}
+    elseif currentState == VIM_STATE.VISUAL then
+        color = {red=1, green=0.6, blue=0.2, alpha=1}
+    elseif currentState == VIM_STATE.PENDING_CHANGE then
+        stateText = "PENDING"; color = colorAccent
+    end
     _G.keyBuffer[2].text = stateText; _G.keyBuffer[2].textColor = color
 end
 
@@ -341,7 +359,10 @@ local function addToBuffer(str)
 end
 
 local function resetToNormal()
-    currentState = VIM_STATE.NORMAL; keyHistory = {}; _G.keyBuffer[3].text = ""; _G.keyBuffer[4].text = "";
+    currentState = VIM_STATE.NORMAL;
+    pendingMacroStart = false -- Cancel pending start, but don't stop active recording
+    keyHistory = {};
+    _G.keyBuffer[3].text = ""; _G.keyBuffer[4].text = "";
     updateStateDisplay(); _G.hud:hide()
 end
 
@@ -397,46 +418,43 @@ local function initPrefs()
     _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=12, yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
     _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="3%",w="100%",h="8%"} }
 
-    -- Modified loop to include one extra button (i=0 to 6)
-    -- Indices generated: 3 to 16
-    for i=0,6 do
-        -- Tighter spacing (8% instead of 8.5%) to fit the extra button
-        local yPos = 10 + (i * 8)
-        _G.prefPanel[3 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="6.5%"} }
-        _G.prefPanel[4 + (i*2)] = { type="text", frame={x="10%",y=(yPos+1.5).."%",w="80%",h="6.5%"} }
+    -- Modified loop to include EXTRA button for Macro (i=0 to 7)
+    for i=0,7 do
+        local yPos = 10 + (i * 7.5) -- slightly tighter vertical spacing
+        _G.prefPanel[3 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="6%"} }
+        _G.prefPanel[4 + (i*2)] = { type="text", frame={x="10%",y=(yPos+1.5).."%",w="80%",h="6%"} }
     end
 
-    -- Shifted yStart down slightly to accommodate new button (64 -> 66)
-    local yStart = 66
-    -- Size Controls (Index 17-21)
-    _G.prefPanel[17] = { type="rectangle", action="fill", frame={x="10%",y=yStart.."%",w="20%",h="7%"} } -- Title -
-    _G.prefPanel[18] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(yStart+0.5).."%",w="20%",h="7%"} }
-    _G.prefPanel[19] = { type="rectangle", action="fill", frame={x="70%",y=yStart.."%",w="20%",h="7%"} } -- Title +
-    _G.prefPanel[20] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="70%",y=(yStart+0.5).."%",w="20%",h="7%"} }
-    _G.prefPanel[21] = { type="text", text="Title Size", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%",y=(yStart+1).."%",w="40%",h="7%"} }
+    local yStart = 72
+    -- Size Controls (Index 19-23 now, shifted due to loop)
+    _G.prefPanel[19] = { type="rectangle", action="fill", frame={x="10%",y=yStart.."%",w="20%",h="6%"} } -- Title -
+    _G.prefPanel[20] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(yStart+0.5).."%",w="20%",h="6%"} }
+    _G.prefPanel[21] = { type="rectangle", action="fill", frame={x="70%",y=yStart.."%",w="20%",h="6%"} } -- Title +
+    _G.prefPanel[22] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="70%",y=(yStart+0.5).."%",w="20%",h="6%"} }
+    _G.prefPanel[23] = { type="text", text="Title Size", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%",y=(yStart+1).."%",w="40%",h="6%"} }
 
-    yStart = 74 -- (72 -> 74)
-    _G.prefPanel[22] = { type="rectangle", action="fill", frame={x="10%",y=yStart.."%",w="20%",h="7%"} } -- Text -
-    _G.prefPanel[23] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(yStart+0.5).."%",w="20%",h="7%"} }
-    _G.prefPanel[24] = { type="rectangle", action="fill", frame={x="70%",y=yStart.."%",w="20%",h="7%"} } -- Text +
-    _G.prefPanel[25] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="70%",y=(yStart+0.5).."%",w="20%",h="7%"} }
-    _G.prefPanel[26] = { type="text", text="Text Size", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%",y=(yStart+1).."%",w="40%",h="7%"} }
+    yStart = 79
+    _G.prefPanel[24] = { type="rectangle", action="fill", frame={x="10%",y=yStart.."%",w="20%",h="6%"} } -- Text -
+    _G.prefPanel[25] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(yStart+0.5).."%",w="20%",h="6%"} }
+    _G.prefPanel[26] = { type="rectangle", action="fill", frame={x="70%",y=yStart.."%",w="20%",h="6%"} } -- Text +
+    _G.prefPanel[27] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="70%",y=(yStart+0.5).."%",w="20%",h="6%"} }
+    _G.prefPanel[28] = { type="text", text="Text Size", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%",y=(yStart+1).."%",w="40%",h="6%"} }
 
-    -- App Exclusion (Current App) (82 -> 86)
-    local yApp = 86
-    _G.prefPanel[27] = { type="rectangle", action="fill", frame={x="10%",y=yApp.."%",w="55%",h="7%"} }
-    _G.prefPanel[28] = { type="text", text="App Name", textColor={white=1}, textSize=14, textAlignment="center", frame={x="10%",y=(yApp+0.5).."%",w="55%",h="7%"} }
-    _G.prefPanel[29] = { type="rectangle", action="fill", frame={x="67%",y=yApp.."%",w="23%",h="7%"} }
-    _G.prefPanel[30] = { type="text", text="Toggle", textColor={white=1}, textSize=14, textAlignment="center", frame={x="67%",y=(yApp+0.5).."%",w="23%",h="7%"} }
+    -- App Exclusion (Current App)
+    local yApp = 87
+    _G.prefPanel[29] = { type="rectangle", action="fill", frame={x="10%",y=yApp.."%",w="55%",h="6%"} }
+    _G.prefPanel[30] = { type="text", text="App Name", textColor={white=1}, textSize=14, textAlignment="center", frame={x="10%",y=(yApp+0.5).."%",w="55%",h="6%"} }
+    _G.prefPanel[31] = { type="rectangle", action="fill", frame={x="67%",y=yApp.."%",w="23%",h="6%"} }
+    _G.prefPanel[32] = { type="text", text="Toggle", textColor={white=1}, textSize=14, textAlignment="center", frame={x="67%",y=(yApp+0.5).."%",w="23%",h="6%"} }
 
-    -- SAVE BUTTON (LEFT) (91 -> 93)
-    local yBtn = 93
-    _G.prefPanel[31] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=yBtn.."%",w="35%",h="6%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[32] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(yBtn+0.5).."%",w="35%",h="6%"} }
+    -- SAVE BUTTON (LEFT)
+    local yBtn = 93.5
+    _G.prefPanel[33] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=yBtn.."%",w="35%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[34] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(yBtn+0.5).."%",w="35%",h="5%"} }
 
     -- MANAGE LIST BUTTON (RIGHT)
-    _G.prefPanel[33] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=yBtn.."%",w="40%",h="6%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[34] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(yBtn+0.5).."%",w="40%",h="6%"} }
+    _G.prefPanel[35] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=yBtn.."%",w="40%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[36] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(yBtn+0.5).."%",w="40%",h="5%"} }
 end
 
 local function updatePrefsVisuals()
@@ -451,25 +469,27 @@ local function updatePrefsVisuals()
     styleBtn(9, isAerospaceEnabled, "Aerospace Info: "..(isAerospaceEnabled and "ON" or "OFF"))
     styleBtn(11, isMasterEnabled, "Master Power: "..(isMasterEnabled and "ON" or "OFF"))
 
-    -- Shifted Position button down to index 5
+    -- Shifted Position button down to index 5 (Lua index 13)
     local posNames = {"Left (150px)", "Top Right", "Bot Right", "True Center", "Custom"}
     _G.prefPanel[13].fillColor = btnColorAction; _G.prefPanel[13].roundedRectRadii = {xRadius=6,yRadius=6}
     _G.prefPanel[14].text = styledtext.new("Pos: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
 
-    -- New Escape Menu Button
     styleBtn(15, isEscapeMenuEnabled, "Esc for Menu: "..(isEscapeMenuEnabled and "ON" or "OFF"))
 
+    -- NEW MACRO BUTTON (Index 17)
+    styleBtn(17, isMacroEnabled, "Macro Rec: "..(isMacroEnabled and "ON" or "OFF"))
+
     local function styleSmallBtn(idx) _G.prefPanel[idx].fillColor = btnColorAction; _G.prefPanel[idx].roundedRectRadii={xRadius=6,yRadius=6} end
-    styleSmallBtn(17); styleSmallBtn(19); styleSmallBtn(22); styleSmallBtn(24)
-    _G.prefPanel[21].text = "Title Size: " .. fontTitleSize
-    _G.prefPanel[26].text = "Text Size: " .. fontBodySize
+    styleSmallBtn(19); styleSmallBtn(21); styleSmallBtn(24); styleSmallBtn(26)
+    _G.prefPanel[23].text = "Title Size: " .. fontTitleSize
+    _G.prefPanel[28].text = "Text Size: " .. fontBodySize
 
     local appName, appID = getCurrentAppInfo()
     local isExcluded = excludedApps[appID] == true
-    _G.prefPanel[27].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}; _G.prefPanel[27].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[28].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=14}, color={white=0.9}, paragraphStyle={alignment="left"}})
-    _G.prefPanel[29].fillColor = isExcluded and btnColorOff or btnColorOn; _G.prefPanel[29].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[30].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[29].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}; _G.prefPanel[29].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[30].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=14}, color={white=0.9}, paragraphStyle={alignment="left"}})
+    _G.prefPanel[31].fillColor = isExcluded and btnColorOff or btnColorOn; _G.prefPanel[31].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[32].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 end
 
 -- 2. EXCLUSION LIST PANEL
@@ -525,52 +545,51 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         if _G.prefPanel:isShowing() and p.x >= f.x and p.x <= (f.x + f.w) and p.y >= f.y and p.y <= (f.y + f.h) then
             local relY = (p.y - f.y) / f.h; local relX = (p.x - f.x) / f.w; local changed = false
 
-            -- Updated Click Logic for Tighter Layout (8% steps starting at 10%)
+            -- Updated Click Logic for 8 Buttons (spacing ~7.5%)
             if relY > 0.10 and relY < 0.16 then isHudEnabled = not isHudEnabled; changed=true
-            elseif relY > 0.18 and relY < 0.24 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
-            elseif relY > 0.26 and relY < 0.32 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
-            elseif relY > 0.34 and relY < 0.40 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
-            elseif relY > 0.42 and relY < 0.48 then isMasterEnabled = not isMasterEnabled; changed=true
-            elseif relY > 0.50 and relY < 0.56 then hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end; changed=true
-            elseif relY > 0.58 and relY < 0.64 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true -- NEW BUTTON CLICK
+            elseif relY > 0.17 and relY < 0.23 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
+            elseif relY > 0.24 and relY < 0.30 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
+            elseif relY > 0.32 and relY < 0.38 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
+            elseif relY > 0.40 and relY < 0.46 then isMasterEnabled = not isMasterEnabled; changed=true
+            elseif relY > 0.47 and relY < 0.53 then hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end; changed=true
+            elseif relY > 0.55 and relY < 0.61 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
+            elseif relY > 0.62 and relY < 0.68 then isMacroEnabled = not isMacroEnabled; changed=true -- MACRO BUTTON
 
-            -- Sizing with Immediate Feedback (Start Y > 0.66)
-            elseif relY > 0.66 and relY < 0.73 then
+            -- Sizing with Immediate Feedback
+            elseif relY > 0.72 and relY < 0.78 then
                 if relX < 0.3 then fontTitleSize=math.max(10, fontTitleSize-2) else fontTitleSize=math.min(60, fontTitleSize+2) end
-                changed=true; saveSettings(); -- SAVE ON TEXT CHANGE
+                changed=true; saveSettings();
                 presentHud("Title Size: "..fontTitleSize, previewMenu.text)
-            elseif relY > 0.74 and relY < 0.81 then
+            elseif relY > 0.79 and relY < 0.85 then
                 if relX < 0.3 then fontBodySize=math.max(8, fontBodySize-1) else fontBodySize=math.min(40, fontBodySize+1) end
-                changed=true; saveSettings(); -- SAVE ON TEXT CHANGE
+                changed=true; saveSettings();
                 presentHud("Text Size: "..fontBodySize, previewMenu.text)
 
-            -- Current App Toggle (Start Y > 0.86)
-            elseif relY > 0.86 and relY < 0.92 and relX > 0.67 then
+            -- Current App Toggle
+            elseif relY > 0.87 and relY < 0.93 and relX > 0.67 then
                 local _, appID = getCurrentAppInfo()
                 if excludedApps[appID] then
                     excludedApps[appID] = nil
-                    if isBufferEnabled then _G.keyBuffer:show() end -- Show if un-excluded
+                    if isBufferEnabled then _G.keyBuffer:show() end
                 else
                     excludedApps[appID] = true
-                    _G.keyBuffer:hide(); _G.hud:hide() -- Hide immediately if excluded
+                    _G.keyBuffer:hide(); _G.hud:hide()
                 end
                 changed=true; if _G.exclPanel:isShowing() then updateExclusionPanel() end
 
-            -- BOTTOM ROW (Save & List) (Start Y > 0.93)
+            -- BOTTOM ROW (Save & List)
             elseif relY > 0.93 then
                 if relX < 0.45 then
-                    -- Save Button Clicked
                     saveSettings()
                     alert.show("Vimualizer Settings Saved", 1)
                 elseif relX > 0.50 then
-                    -- Exclusions Button Clicked
                     updateExclusionPanel()
                     _G.exclPanel:show()
                 end
             end
 
             if changed then
-                saveSettings() -- SAVE ON CHANGE
+                saveSettings()
                 timer.doAfter(0, function() updatePrefsVisuals() end)
             end
             return true
@@ -580,24 +599,19 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         local eF = _G.exclPanel:frame()
         if _G.exclPanel:isShowing() and p.x >= eF.x and p.x <= (eF.x + eF.w) and p.y >= eF.y and p.y <= (eF.y + eF.h) then
             local relY = (p.y - eF.y) / eF.h
-            -- Check Close Button (Bottom 10%)
             if relY > 0.90 then _G.exclPanel:hide(); return true end
-
-            -- Check Remove Buttons
-            -- Each row is ~40px high. StartY is 60.
-            local rowH = 40 -- (35 + 5 padding)
+            local rowH = 40
             local listStartY = eF.y + 60
             local relativeClickY = p.y - listStartY
 
             if relativeClickY > 0 then
                 local rowIndex = math.floor(relativeClickY / rowH) + 1
-                -- Check X coordinate for the delete button (Right 13%)
                 local relX = (p.x - eF.x) / eF.w
                 if relX > 0.85 and sortedExclusions[rowIndex] then
                     excludedApps[sortedExclusions[rowIndex]] = nil
-                    saveSettings() -- SAVE ON CHANGE
-                    updateExclusionPanel() -- Refresh list
-                    updatePrefsVisuals() -- Refresh main toggle if it matches
+                    saveSettings()
+                    updateExclusionPanel()
+                    updatePrefsVisuals()
                 end
             end
             return true
@@ -607,7 +621,7 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         local hF = _G.hud:frame()
         if _G.hud:isShowing() and p.x >= hF.x and p.x <= (hF.x + hF.w) and p.y >= hF.y and p.y <= (hF.y + hF.h) then
             dragTarget="hud"; dragOffset={x=p.x-hF.x, y=p.y-hF.y};
-            hudPosIndex=5; -- Force to Custom Position
+            hudPosIndex=5;
             updatePrefsVisuals();
             return true
         end
@@ -616,7 +630,6 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             dragTarget="buffer"; dragOffset={x=p.x-bF.x, y=p.y-bF.y}; return true
         end
 
-        -- Click Outside = Close All
         _G.prefPanel:hide(); _G.exclPanel:hide(); _G.hud:hide(); isEditMode=false; updateDragHandles(); resetToNormal(); return false
 
     elseif type == eventtap.event.types.leftMouseDragged then
@@ -630,9 +643,7 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             bufferX, bufferY = newX, newY; return true
         end
     elseif type == eventtap.event.types.leftMouseUp then
-        if dragTarget then
-            saveSettings() -- SAVE ON DRAG END
-        end
+        if dragTarget then saveSettings() end
         dragTarget = nil
     end
     return false
@@ -683,31 +694,26 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
 
     -- 1. GLOBAL ESCAPE HANDLER
     if keyName == "escape" or (flags.ctrl and keyName == "[") then
-        -- A. Close Settings Panels if open (Blocking)
         if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
         if _G.prefPanel:isShowing() then
             _G.prefPanel:hide(); isEditMode=false; updateDragHandles(); resetToNormal()
             return true
         end
-
-        -- B. If HUD is open OR Buffer has text -> Just Reset (Don't show menu yet)
         if _G.hud:isShowing() or #keyHistory > 0 then
             resetToNormal()
-            return false -- Pass Escape to app (to exit Vim modes)
+            return false
         end
-
-        -- C. If Buffer is ALREADY empty -> Show the Menu (Help)
         if isHudEnabled and not isEditMode and not isCurrentAppDisabled() then
             presentHud(indexMenu.title, indexMenu.text, colorTitle)
             return false
         end
-
         return false
     end
 
     if not isMasterEnabled or isEditMode or isCurrentAppDisabled() then return false end
     local char = e:getCharacters()
 
+    -- 2. AEROSPACE HANDLING
     if isAerospaceEnabled and flags.alt then
          local cleanKey = keyName
          if flags.shift then cleanKey = "⇧"..cleanKey end
@@ -719,6 +725,37 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
     if currentState == VIM_STATE.INSERT then return false end
     local bufferChar = char; if keyName=="space" then bufferChar="␣" elseif keyName=="return" then bufferChar="↵" elseif keyName=="backspace" then bufferChar="⌫" elseif flags.ctrl then bufferChar="^"..(keyName or "?") end
 
+    -- 3. MACRO RECORDING LOGIC
+    if isMacroEnabled then
+        -- Stop recording if 'q' is pressed while recording
+        if recordingRegister and bufferChar == "q" then
+            recordingRegister = nil
+            addToBuffer("q (Stop)")
+            return false
+        end
+
+        -- Handle the second keystroke of 'q{reg}'
+        if pendingMacroStart then
+            pendingMacroStart = false
+            if bufferChar then
+                recordingRegister = bufferChar
+                addToBuffer(bufferChar)
+                -- Force update to change color/text to REC status
+                updateStateDisplay()
+            end
+            return false
+        end
+
+        -- Handle the initial 'q' in Normal mode
+        if currentState == VIM_STATE.NORMAL and bufferChar == "q" and not recordingRegister then
+            pendingMacroStart = true
+            addToBuffer("q")
+            if isHudEnabled then presentHud(triggers.q.title, triggers.q.text, colorAccent) end
+            return false
+        end
+    end
+
+    -- 4. STANDARD VIM LOGIC
     if insertTriggers[bufferChar] then currentState = VIM_STATE.INSERT; addToBuffer(bufferChar); return false end
     if bufferChar == "c" and currentState == VIM_STATE.NORMAL then currentState = VIM_STATE.PENDING_CHANGE; addToBuffer("c"); if isHudEnabled then presentHud(triggers.c.title, triggers.c.text, colorAccent) end; return false end
     if currentState == VIM_STATE.PENDING_CHANGE then currentState = VIM_STATE.INSERT; addToBuffer(bufferChar); _G.hud:hide(); return false end
@@ -735,4 +772,4 @@ _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
 end):start()
 
 hs.alert.show("Vimualizer Loaded")
-updateBufferGeometry(); updateStateDisplay(); if isBufferEnabled then _G.keyBuffer:show() end
+updateBufferGeometry(); updateStateDisplay(); if isBufferEnabled then _G.keyBuffer:show() endq
