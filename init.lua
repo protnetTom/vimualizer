@@ -632,14 +632,18 @@ end):start()
 
 _G.modWatcher = eventtap.new({eventtap.event.types.flagsChanged}, function(e)
     if not isMasterEnabled or isEditMode or currentState == VIM_STATE.INSERT or isCurrentAppDisabled() then return false end
-    local flags = e:getFlags()
-    if flags.alt and isAerospaceEnabled then presentHud(modifierMenus.alt.title, modifierMenus.alt.text, colorAccent); if hudTimer then hudTimer:stop() end
-    elseif flags.shift then presentHud(modifierMenus.shift.title, modifierMenus.shift.text, colorAccent); if hudTimer then hudTimer:stop() end
-    elseif flags.ctrl then presentHud(modifierMenus.ctrl.title, modifierMenus.ctrl.text, colorAccent); if hudTimer then hudTimer:stop() end
-    else
-        if _G.hud:isShowing() then
-            local currentTitle = _G.hud[2].text:getString()
-            if currentTitle == modifierMenus.shift.title or currentTitle == modifierMenus.ctrl.title or currentTitle == modifierMenus.alt.title then _G.hud:hide() end
+
+    -- Check if HUD/Suggestions are enabled before showing modifier menus
+    if isHudEnabled then
+        local flags = e:getFlags()
+        if flags.alt and isAerospaceEnabled then presentHud(modifierMenus.alt.title, modifierMenus.alt.text, colorAccent); if hudTimer then hudTimer:stop() end
+        elseif flags.shift then presentHud(modifierMenus.shift.title, modifierMenus.shift.text, colorAccent); if hudTimer then hudTimer:stop() end
+        elseif flags.ctrl then presentHud(modifierMenus.ctrl.title, modifierMenus.ctrl.text, colorAccent); if hudTimer then hudTimer:stop() end
+        else
+            if _G.hud:isShowing() then
+                local currentTitle = _G.hud[2].text:getString()
+                if currentTitle == modifierMenus.shift.title or currentTitle == modifierMenus.ctrl.title or currentTitle == modifierMenus.alt.title then _G.hud:hide() end
+            end
         end
     end
     return false
