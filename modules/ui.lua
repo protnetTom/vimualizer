@@ -15,6 +15,7 @@ _G.keyBuffer = canvas.new({x=0, y=0, w=constants.bufferW, h=constants.bufferH})
 _G.prefPanel = canvas.new({x=constants.prefX, y=constants.prefY, w=constants.prefW, h=constants.prefH}):level(hs.canvas.windowLevels.floating)
 _G.exclPanel = canvas.new({x=constants.exclX, y=constants.exclY, w=constants.exclW, h=constants.exclH}):level(hs.canvas.windowLevels.floating)
 _G.statsPanel = canvas.new({x=constants.statsX, y=constants.statsY, w=constants.statsW, h=constants.statsH}):level(hs.canvas.windowLevels.floating + 5)
+_G.trainerCanvas = canvas.new({x=(constants.screen.w-450)/2, y=constants.screen.h * 0.2, w=450, h=180}):level(hs.canvas.windowLevels.overlay)
 _G.tooltipCanvas = canvas.new({x=0,y=0,w=200,h=60}):level(hs.canvas.windowLevels.floating + 10)
 
 ui.opacityTimer = nil
@@ -39,6 +40,14 @@ function ui.initCanvases()
     -- Initialize Tooltips
     _G.tooltipCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#1c1c1e", alpha=0.95}, roundedRectRadii={xRadius=8,yRadius=8}, strokeColor={white=1,alpha=0.2}, strokeWidth=1, shadow={ blurRadius=8, color={alpha=0.5, white=0}, offset={h=4, w=0} } }
     _G.tooltipCanvas[2] = { type="text", text="", frame={x="8px",y="8px",w="184px",h="44px"} }
+
+    -- Initialize Trainer
+    _G.trainerCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#1e1e1e", alpha=0.98}, roundedRectRadii={xRadius=16,yRadius=16}, strokeColor={hex="#FFD60A", alpha=1}, strokeWidth=3, shadow=constants.shadowSpec }
+    _G.trainerCanvas[2] = { type="text", text="", textColor={white=0.6}, textSize=12, textAlignment="center", frame={x="5%",y="5%",w="90%",h="10%"}, textFont=config.fontUIBold }
+    _G.trainerCanvas[3] = { type="text", text="", textColor={white=1}, textSize=17, textAlignment="center", frame={x="5%",y="15%",w="90%",h="35%"}, textFont=config.fontUIBold }
+    _G.trainerCanvas[4] = { type="text", text="", textColor={hex="#FF453A"}, textSize=16, textAlignment="center", frame={x="5%",y="50%",w="90%",h="15%"}, textFont=config.fontCode }
+    _G.trainerCanvas[5] = { type="text", text="", textColor={hex="#FFD60A"}, textSize=20, textAlignment="center", frame={x="5%",y="65%",w="90%",h="20%"}, textFont=config.fontCode }
+    _G.trainerCanvas[6] = { type="text", text="", textColor={white=0.4}, textSize=10, textAlignment="center", frame={x="5%",y="85%",w="90%",h="12%"}, textFont=config.fontUI }
 end
 
 function ui.resetOpacity()

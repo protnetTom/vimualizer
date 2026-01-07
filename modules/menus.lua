@@ -40,6 +40,7 @@ menus.tooltips = {
     toggle_aerospace = "Option/Alt window commands",
     toggle_tooltips = "Toggle these help cards",
     toggle_ghost = "Fade UI when inactive",
+    toggle_trainer = "Practice Vim motions with challenges",
     btn_analytics = "View efficiency stats & heatmap"
 }
 
