@@ -90,16 +90,19 @@ function panels.initPrefs()
     _G.prefPanel[51] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="2.5%"} }
     _G.prefPanel[52] = { type="text", text="Toggle", textColor={white=1}, textSize=10, textAlignment="center", frame={x="67%",y=(appRowY+0.3).."%",w="23%",h="2.5%"} }
 
-    -- Footer (Indices 53-58)
+    -- Footer (Indices 53-60)
     local footerY = 97.2
-    _G.prefPanel[53] = { type="rectangle", action="fill", fillColor=constants.btnColorSave, frame={x="10%",y=footerY.."%",w="25%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
-    _G.prefPanel[54] = { type="text", text="Save", textColor={white=1}, textSize=12, textAlignment="center", frame={x="10%",y=(footerY+0.2).."%",w="25%",h="2%"} }
+    _G.prefPanel[53] = { type="rectangle", action="fill", fillColor=constants.btnColorSave, frame={x="5%",y=footerY.."%",w="20%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
+    _G.prefPanel[54] = { type="text", text="Save", textColor={white=1}, textSize=11, textAlignment="center", frame={x="5%",y=(footerY+0.2).."%",w="20%",h="2%"} }
     
-    _G.prefPanel[55] = { type="rectangle", action="fill", fillColor=constants.btnColorAction, frame={x="37.5%",y=footerY.."%",w="25%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
-    _G.prefPanel[56] = { type="text", text="Analytics", textColor={white=1}, textSize=12, textAlignment="center", frame={x="37.5%",y=(footerY+0.2).."%",w="25%",h="2%"} }
+    _G.prefPanel[55] = { type="rectangle", action="fill", fillColor=constants.btnColorAction, frame={x="27.5%",y=footerY.."%",w="20%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
+    _G.prefPanel[56] = { type="text", text="Analytics", textColor={white=1}, textSize=11, textAlignment="center", frame={x="27.5%",y=(footerY+0.2).."%",w="20%",h="2%"} }
 
-    _G.prefPanel[57] = { type="rectangle", action="fill", fillColor={hex="#5856D6"}, frame={x="65%",y=footerY.."%",w="25%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
-    _G.prefPanel[58] = { type="text", text="Exclusions", textColor={white=1}, textSize=12, textAlignment="center", frame={x="65%",y=(footerY+0.2).."%",w="25%",h="2%"} }
+    _G.prefPanel[57] = { type="rectangle", action="fill", fillColor={hex="#5856D6"}, frame={x="50%",y=footerY.."%",w="20%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
+    _G.prefPanel[58] = { type="text", text="Exclusions", textColor={white=1}, textSize=11, textAlignment="center", frame={x="50%",y=(footerY+0.2).."%",w="20%",h="2%"} }
+
+    _G.prefPanel[59] = { type="rectangle", action="fill", fillColor={hex="#FF9500"}, frame={x="72.5%",y=footerY.."%",w="20%",h="2%"}, roundedRectRadii={xRadius=4,yRadius=4} }
+    _G.prefPanel[60] = { type="text", text="Tour", textColor={white=1}, textSize=11, textAlignment="center", frame={x="72.5%",y=(footerY+0.2).."%",w="20%",h="2%"} }
 end
 
 function panels.updatePrefsVisuals()
@@ -316,9 +319,10 @@ function panels.getSettingsTarget(relX, relY)
         
         -- FOOTER (97.2+)
         elseif relY > 0.972 then
-            if relX < 0.35 then return "btn_save"
-            elseif relX > 0.38 and relX < 0.63 then return "btn_analytics"
-            elseif relX > 0.65 then return "btn_exclusions" end
+            if relX < 0.25 then return "btn_save"
+            elseif relX > 0.27 and relX < 0.48 then return "btn_analytics"
+            elseif relX > 0.50 and relX < 0.70 then return "btn_exclusions"
+            elseif relX > 0.72 then return "btn_tour" end
         end
     end
     return nil

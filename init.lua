@@ -15,6 +15,7 @@ if _G.exclPanel then _G.exclPanel:delete() end
 if _G.snipPanel then _G.snipPanel:delete() end
 if _G.statsPanel then _G.statsPanel:delete() end
 if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
+if _G.onboardingCanvas then _G.onboardingCanvas:delete() end
 
 -- 2. REQUIRE MODULES
 local constants = require("modules.constants")
@@ -24,6 +25,7 @@ local ui = require("modules.ui")
 local panels = require("modules.panels")
 local vim_logic = require("modules.vim_logic")
 local watchers = require("modules.watchers")
+local onboarding = require("modules.onboarding")
 
 -- 3. INITIALIZATION
 config.load()
@@ -61,4 +63,9 @@ end)
 hs.alert.show("Vimualizer " .. constants.version .. " Loaded")
 ui.updateBufferGeometry()
 vim_logic.updateStateDisplay()
-if config.isBufferEnabled then _G.keyBuffer:show() end
+if config.isBufferEnabled and config.hasCompletedOnboarding then _G.keyBuffer:show() end
+
+-- 6. FIRST TIME ONBOARDING
+if not config.hasCompletedOnboarding then
+    onboarding.start()
+end

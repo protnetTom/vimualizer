@@ -19,6 +19,7 @@ local panels = require("modules.panels")
 local vim_logic = require("modules.vim_logic")
 local trainer = require("modules.trainer")
 local snippets = require("modules.snippets")
+local onboarding = require("modules.onboarding")
 
 local dragTarget = nil
 local dragOffset = {x=0, y=0}
@@ -155,6 +156,12 @@ function watchers.init()
                 elseif target == "btn_save" then config.save(); alert.show("Vimualizer Settings Saved", 1)
                 elseif target == "btn_analytics" then panels.updateStatsPanel(); _G.statsPanel:show()
                 elseif target == "btn_exclusions" then panels.updateExclusionPanel(); _G.exclPanel:show()
+                elseif target == "btn_tour" then 
+                    _G.prefPanel:hide()
+                    _G.exclPanel:hide()
+                    config.isEditMode = false
+                    ui.updateDragHandles()
+                    onboarding.start()
                 end
 
                 if changed then config.save(); timer.doAfter(0, function() panels.updatePrefsVisuals() end) end
@@ -257,7 +264,7 @@ function watchers.init()
         if eventType == hs.application.watcher.activated then
             local bundleID = app:bundleID()
             if config.excludedApps[bundleID] then _G.hud:hide(); _G.keyBuffer:hide()
-            else if config.isBufferEnabled then _G.keyBuffer:show() end end
+            else if config.isBufferEnabled and config.hasCompletedOnboarding then _G.keyBuffer:show() end end
             if _G.prefPanel:isShowing() then panels.updatePrefsVisuals() end
             ui.resetOpacity()
             snippets.clear()
