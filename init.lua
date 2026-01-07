@@ -387,95 +387,125 @@ _G.exclPanel = canvas.new({x=exclX, y=exclY, w=exclW, h=exclH}):level(hs.canvas.
 
 local sortedExclusions = {}
 
--- 1. INIT MAIN PREFS (Added Alignment Button)
+-- 1. INIT MAIN PREFS (New Sectioned Layout)
 local function initPrefs()
     _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=12, yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
-    _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="3%",w="100%",h="8%"} }
+    _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="5%"} }
 
-    -- 7 Full Width Buttons
+    -- SECTION: FEATURES (Index 3)
+    _G.prefPanel[3] = { type="text", text="FEATURES", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y="8%",w="80%",h="3%"} }
+
+    -- 7 Feature Buttons (Indices 4-17)
+    -- Master, Sug, Buffer, Action, Entry, Macro, Aerospace
     for i=0,6 do
-        local yPos = 10 + (i * 7)
-        _G.prefPanel[3 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="6%"} }
-        _G.prefPanel[4 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+1.5).."%",w="80%",h="6%"} }
+        local yPos = 12 + (i * 6)
+        _G.prefPanel[4 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="5%"} }
+        -- Nudged from 0.9 to 1.2
+        _G.prefPanel[5 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+1.2).."%",w="80%",h="5%"} }
     end
 
-    -- Split Row for Position / Alignment
-    local splitY = 10 + (7 * 7) -- ~59%
-    -- Left: Position (Index 17, 18)
-    _G.prefPanel[17] = { type="rectangle", action="fill", frame={x="10%",y=splitY.."%",w="38%",h="6%"} }
-    _G.prefPanel[18] = { type="text", textAlignment="center", frame={x="10%",y=(splitY+1.5).."%",w="38%",h="6%"} }
-    -- Right: Alignment (Index 19, 20)
-    _G.prefPanel[19] = { type="rectangle", action="fill", frame={x="52%",y=splitY.."%",w="38%",h="6%"} }
-    _G.prefPanel[20] = { type="text", textAlignment="center", frame={x="52%",y=(splitY+1.5).."%",w="38%",h="6%"} }
+    -- SECTION: APPEARANCE (Index 18)
+    local appY = 56
+    _G.prefPanel[18] = { type="text", text="APPEARANCE", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=appY.."%",w="80%",h="3%"} }
 
-    local yStart = 68
-    -- Size Controls (Title) - Indices shifted +2 due to extra button pair
-    _G.prefPanel[21] = { type="rectangle", action="fill", frame={x="10%",y=yStart.."%",w="20%",h="6%"} }
-    _G.prefPanel[22] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(yStart+0.5).."%",w="20%",h="6%"} }
-    _G.prefPanel[23] = { type="rectangle", action="fill", frame={x="70%",y=yStart.."%",w="20%",h="6%"} }
-    _G.prefPanel[24] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="70%",y=(yStart+0.5).."%",w="20%",h="6%"} }
-    _G.prefPanel[25] = { type="text", text="Title Size", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%",y=(yStart+1).."%",w="40%",h="6%"} }
+    -- Position & Alignment (Indices 19-22)
+    local subY = appY + 4
+    _G.prefPanel[19] = { type="rectangle", action="fill", frame={x="10%",y=subY.."%",w="38%",h="5%"} }
+    -- Nudged from 1.0 to 1.3
+    _G.prefPanel[20] = { type="text", textAlignment="center", frame={x="10%",y=(subY+1.3).."%",w="38%",h="5%"} }
+    _G.prefPanel[21] = { type="rectangle", action="fill", frame={x="52%",y=subY.."%",w="38%",h="5%"} }
+    _G.prefPanel[22] = { type="text", textAlignment="center", frame={x="52%",y=(subY+1.3).."%",w="38%",h="5%"} }
 
-    yStart = 76
-    -- Size Controls (Text)
-    _G.prefPanel[26] = { type="rectangle", action="fill", frame={x="10%",y=yStart.."%",w="20%",h="6%"} }
-    _G.prefPanel[27] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(yStart+0.5).."%",w="20%",h="6%"} }
-    _G.prefPanel[28] = { type="rectangle", action="fill", frame={x="70%",y=yStart.."%",w="20%",h="6%"} }
-    _G.prefPanel[29] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="70%",y=(yStart+0.5).."%",w="20%",h="6%"} }
-    _G.prefPanel[30] = { type="text", text="Text Size", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%",y=(yStart+1).."%",w="40%",h="6%"} }
+    -- Title Size (Indices 23-27)
+    local sizeY1 = subY + 7
+    _G.prefPanel[23] = { type="rectangle", action="fill", frame={x="10%",y=sizeY1.."%",w="15%",h="5%"} } -- Minus
+    -- Nudged from 0.7 to 1.0
+    _G.prefPanel[24] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY1+1.0).."%",w="15%",h="5%"} }
+    _G.prefPanel[25] = { type="rectangle", action="fill", frame={x="75%",y=sizeY1.."%",w="15%",h="5%"} } -- Plus
+    _G.prefPanel[26] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY1+1.0).."%",w="15%",h="5%"} }
+    _G.prefPanel[27] = { type="text", text="Title Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY1+1.2).."%",w="50%",h="5%"} }
 
-    -- App Exclusion
-    local yApp = 85
-    _G.prefPanel[31] = { type="rectangle", action="fill", frame={x="10%",y=yApp.."%",w="55%",h="6%"} }
-    _G.prefPanel[32] = { type="text", text="App Name", textColor={white=1}, textSize=14, textAlignment="center", frame={x="10%",y=(yApp+0.5).."%",w="55%",h="6%"} }
-    _G.prefPanel[33] = { type="rectangle", action="fill", frame={x="67%",y=yApp.."%",w="23%",h="6%"} }
-    _G.prefPanel[34] = { type="text", text="Toggle", textColor={white=1}, textSize=14, textAlignment="center", frame={x="67%",y=(yApp+0.5).."%",w="23%",h="6%"} }
+    -- Text Size (Indices 28-32)
+    local sizeY2 = sizeY1 + 6
+    _G.prefPanel[28] = { type="rectangle", action="fill", frame={x="10%",y=sizeY2.."%",w="15%",h="5%"} } -- Minus
+    _G.prefPanel[29] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY2+1.0).."%",w="15%",h="5%"} }
+    _G.prefPanel[30] = { type="rectangle", action="fill", frame={x="75%",y=sizeY2.."%",w="15%",h="5%"} } -- Plus
+    _G.prefPanel[31] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY2+1.0).."%",w="15%",h="5%"} }
+    _G.prefPanel[32] = { type="text", text="Text Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY2+1.2).."%",w="50%",h="5%"} }
 
-    -- Bottom Buttons
-    local yBtn = 93
-    _G.prefPanel[35] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=yBtn.."%",w="35%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[36] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(yBtn+0.5).."%",w="35%",h="5%"} }
+    -- SECTION: EXCLUSIONS (Index 33)
+    -- Moved up from +8 (81%) to +6 (79%) to make room for footer
+    local excY = sizeY2 + 6
+    _G.prefPanel[33] = { type="text", text="EXCLUSIONS", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=excY.."%",w="80%",h="3%"} }
 
-    _G.prefPanel[37] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=yBtn.."%",w="40%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[38] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(yBtn+0.5).."%",w="40%",h="5%"} }
+    -- App Toggle (Indices 34-37)
+    local appRowY = excY + 4
+    _G.prefPanel[34] = { type="rectangle", action="fill", frame={x="10%",y=appRowY.."%",w="55%",h="5%"} }
+    -- Nudged from 1.0 to 1.3
+    _G.prefPanel[35] = { type="text", text="App Name", textColor={white=1}, textSize=13, textAlignment="center", frame={x="10%",y=(appRowY+1.3).."%",w="55%",h="5%"} }
+    _G.prefPanel[36] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="5%"} }
+    _G.prefPanel[37] = { type="text", text="Toggle", textColor={white=1}, textSize=13, textAlignment="center", frame={x="67%",y=(appRowY+1.3).."%",w="23%",h="5%"} }
+
+    -- Footer Buttons (Indices 38-41)
+    -- Reverted to 5% height. Moved Y to 89% to leave ~6% margin at bottom.
+    local footerY = 89
+    _G.prefPanel[38] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=footerY.."%",w="35%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    -- Height 5% -> Offset 1.2%
+    _G.prefPanel[39] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(footerY+1.2).."%",w="35%",h="5%"} }
+    _G.prefPanel[40] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=footerY.."%",w="40%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[41] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(footerY+1.2).."%",w="40%",h="5%"} }
 end
 
 local function updatePrefsVisuals()
+    -- Helpers
     local function styleBtn(idx, enabled, txt)
         _G.prefPanel[idx].fillColor = (enabled and btnColorOn or btnColorOff)
         _G.prefPanel[idx].roundedRectRadii = {xRadius=6, yRadius=6}
-        _G.prefPanel[idx+1].text = styledtext.new(txt, {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
+        _G.prefPanel[idx+1].text = styledtext.new(txt, {font={name=".AppleSystemUIFontBold", size=15}, color={white=1}, paragraphStyle={alignment="center"}})
+    end
+    local function styleActionBtn(idx)
+        _G.prefPanel[idx].fillColor = btnColorAction
+        _G.prefPanel[idx].roundedRectRadii = {xRadius=6, yRadius=6}
     end
 
-    styleBtn(3, isMasterEnabled, "Master Power: "..(isMasterEnabled and "ON" or "OFF"))
-    styleBtn(5, isHudEnabled, "Suggestions: "..(isHudEnabled and "ON" or "OFF"))
-    styleBtn(7, isBufferEnabled, "Key Buffer: "..(isBufferEnabled and "ON" or "OFF"))
-    styleBtn(9, isActionInfoEnabled, "Action Info: "..(isActionInfoEnabled and "ON" or "OFF"))
-    styleBtn(11, isEscapeMenuEnabled, "Entry Menu: "..(isEscapeMenuEnabled and "ON" or "OFF"))
-    styleBtn(13, isMacroEnabled, "Macro Rec: "..(isMacroEnabled and "ON" or "OFF"))
-    styleBtn(15, isAerospaceEnabled, "Aerospace Info: "..(isAerospaceEnabled and "ON" or "OFF"))
+    -- Features
+    styleBtn(4, isMasterEnabled, "Enable Vimualizer: "..(isMasterEnabled and "ON" or "OFF"))
+    styleBtn(6, isHudEnabled, "Show Key Hints: "..(isHudEnabled and "ON" or "OFF"))
+    styleBtn(8, isBufferEnabled, "Show Keystrokes: "..(isBufferEnabled and "ON" or "OFF"))
+    styleBtn(10, isActionInfoEnabled, "Explain Actions: "..(isActionInfoEnabled and "ON" or "OFF"))
+    styleBtn(12, isEscapeMenuEnabled, "Show Help Menu: "..(isEscapeMenuEnabled and "ON" or "OFF"))
+    styleBtn(14, isMacroEnabled, "Macro Recording: "..(isMacroEnabled and "ON" or "OFF"))
+    styleBtn(16, isAerospaceEnabled, "Aerospace Mode: "..(isAerospaceEnabled and "ON" or "OFF"))
 
-    -- Position Button (Left)
+    -- Appearance: Position (19,20)
     local posNames = {"Left", "TopRight", "BotRight", "Center", "Custom"}
-    _G.prefPanel[17].fillColor = btnColorAction; _G.prefPanel[17].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[18].text = styledtext.new("Pos: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
+    styleActionBtn(19)
+    _G.prefPanel[20].text = styledtext.new("Position: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
-    -- Alignment Button (Right)
+    -- Appearance: Alignment (21,22)
     local alignLabel = "Align: " .. (hudTextAlignment:gsub("^%l", string.upper))
-    _G.prefPanel[19].fillColor = btnColorAction; _G.prefPanel[19].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[20].text = styledtext.new(alignLabel, {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
+    styleActionBtn(21)
+    _G.prefPanel[22].text = styledtext.new(alignLabel, {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
-    local function styleSmallBtn(idx) _G.prefPanel[idx].fillColor = btnColorAction; _G.prefPanel[idx].roundedRectRadii={xRadius=6,yRadius=6} end
-    styleSmallBtn(21); styleSmallBtn(23); styleSmallBtn(26); styleSmallBtn(28)
-    _G.prefPanel[25].text = "Title Size: " .. fontTitleSize
-    _G.prefPanel[30].text = "Text Size: " .. fontBodySize
+    -- Appearance: Title Size (23-27)
+    styleActionBtn(23); styleActionBtn(25)
+    _G.prefPanel[27].text = "Title Size: " .. fontTitleSize
 
+    -- Appearance: Text Size (28-32)
+    styleActionBtn(28); styleActionBtn(30)
+    _G.prefPanel[32].text = "Text Size: " .. fontBodySize
+
+    -- Exclusions (34-37)
     local appName, appID = getCurrentAppInfo()
     local isExcluded = excludedApps[appID] == true
-    _G.prefPanel[31].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}; _G.prefPanel[31].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[32].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=14}, color={white=0.9}, paragraphStyle={alignment="center"}})
-    _G.prefPanel[33].fillColor = isExcluded and btnColorOff or btnColorOn; _G.prefPanel[33].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[34].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    -- App Name Box
+    _G.prefPanel[34].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}
+    _G.prefPanel[34].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[35].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=13}, color={white=0.9}, paragraphStyle={alignment="center"}})
+    -- Toggle Box
+    _G.prefPanel[36].fillColor = isExcluded and btnColorOff or btnColorOn
+    _G.prefPanel[36].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[37].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=13}, color={white=1}, paragraphStyle={alignment="center"}})
 end
 
 -- 2. EXCLUSION LIST PANEL
@@ -495,13 +525,16 @@ local function updateExclusionPanel()
     for i, bundleId in ipairs(sortedExclusions) do
         local yVal = startY + ((i-1) * (rowH + 5))
         _G.exclPanel[#_G.exclPanel+1] = { type="rectangle", action="fill", fillColor={red=0.2,green=0.2,blue=0.2,alpha=1}, frame={x="5%", y=yVal, w="80%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
-        _G.exclPanel[#_G.exclPanel+1] = { type="text", text=bundleId, textColor={white=0.9}, textSize=13, textAlignment="center", frame={x="7%", y=yVal+7, w="75%", h=rowH} }
+        -- Nudged from 8 to 9.5
+        _G.exclPanel[#_G.exclPanel+1] = { type="text", text=bundleId, textColor={white=0.9}, textSize=13, textAlignment="center", frame={x="7%", y=yVal+9.5, w="75%", h=rowH} }
         _G.exclPanel[#_G.exclPanel+1] = { type="rectangle", action="fill", fillColor=btnColorExclude, frame={x="87%", y=yVal, w="8%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
-        _G.exclPanel[#_G.exclPanel+1] = { type="text", text="X", textColor={white=1}, textSize=14, textAlignment="center", frame={x="87%", y=yVal+6, w="8%", h=rowH} }
+        -- Nudged from 7.5 to 9.0
+        _G.exclPanel[#_G.exclPanel+1] = { type="text", text="X", textColor={white=1}, textSize=14, textAlignment="center", frame={x="87%", y=yVal+9.0, w="8%", h=rowH} }
     end
 
-    _G.exclPanel[#_G.exclPanel+1] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="30%", y="90%", w="40%", h="7%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.exclPanel[#_G.exclPanel+1] = { type="text", text="Close List", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%", y="91.5%", w="40%", h="7%"} }
+    _G.exclPanel[#_G.exclPanel+1] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="30%", y="89%", w="40%", h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    -- Nudged offset 1.7%
+    _G.exclPanel[#_G.exclPanel+1] = { type="text", text="Close List", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%", y="90.7%", w="40%", h="5%"} }
 end
 
 initPrefs(); updatePrefsVisuals()
@@ -521,23 +554,27 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         if _G.prefPanel:isShowing() and p.x >= f.x and p.x <= (f.x + f.w) and p.y >= f.y and p.y <= (f.y + f.h) then
             local relY = (p.y - f.y) / f.h; local relX = (p.x - f.x) / f.w; local changed = false
 
-            -- 1. Master Power (10% - 16%)
-            if relY > 0.10 and relY < 0.16 then isMasterEnabled = not isMasterEnabled; changed=true
-            -- 2. Suggestions (17% - 23%)
-            elseif relY > 0.17 and relY < 0.23 then isHudEnabled = not isHudEnabled; changed=true
-            -- 3. Key Buffer (24% - 30%)
-            elseif relY > 0.24 and relY < 0.30 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
-            -- 4. Action Info (31% - 37%)
-            elseif relY > 0.31 and relY < 0.37 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
-            -- 5. Entry Menu (38% - 44%)
-            elseif relY > 0.38 and relY < 0.44 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
-            -- 6. Macro Rec (45% - 51%)
-            elseif relY > 0.45 and relY < 0.51 then isMacroEnabled = not isMacroEnabled; changed=true
-            -- 7. Aerospace (52% - 58%)
-            elseif relY > 0.52 and relY < 0.58 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
+            -- SECTION: FEATURES (Start ~12%)
+            -- Each feature button is ~5% height, 1% gap.
+            -- 0: 12-17 (Master)
+            -- 1: 18-23 (Hud)
+            -- 2: 24-29 (Buffer)
+            -- 3: 30-35 (Action)
+            -- 4: 36-41 (Entry)
+            -- 5: 42-47 (Macro)
+            -- 6: 48-53 (Aerospace)
 
-            -- 8. Position OR Alignment (59% - 65%)
-            elseif relY > 0.59 and relY < 0.65 then
+            if relY > 0.12 and relY < 0.17 then isMasterEnabled = not isMasterEnabled; changed=true
+            elseif relY > 0.18 and relY < 0.23 then isHudEnabled = not isHudEnabled; changed=true
+            elseif relY > 0.24 and relY < 0.29 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
+            elseif relY > 0.30 and relY < 0.35 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
+            elseif relY > 0.36 and relY < 0.41 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
+            elseif relY > 0.42 and relY < 0.47 then isMacroEnabled = not isMacroEnabled; changed=true
+            elseif relY > 0.48 and relY < 0.53 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
+
+            -- SECTION: APPEARANCE (Header at 56%)
+            -- Position & Alignment: Start ~60% (subY = 56+4)
+            elseif relY > 0.60 and relY < 0.65 then
                 if relX < 0.5 then
                     -- Position Clicked
                     hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end
@@ -550,23 +587,31 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
                 end
                 changed=true
 
-            -- Sizing Controls (Start ~68%)
-            elseif relY > 0.68 and relY < 0.74 then
-                if relX < 0.3 then fontTitleSize=math.max(10, fontTitleSize-2) else fontTitleSize=math.min(60, fontTitleSize+2) end
+            -- Title Size: Start ~67% (sizeY1 = 60+7)
+            elseif relY > 0.67 and relY < 0.72 then
+                if relX < 0.25 then fontTitleSize=math.max(10, fontTitleSize-2) -- Left button region
+                elseif relX > 0.75 then fontTitleSize=math.min(60, fontTitleSize+2) end -- Right button region
                 changed=true; saveSettings(); presentHud("Title Size: "..fontTitleSize, previewMenu.text)
-            elseif relY > 0.76 and relY < 0.82 then
-                if relX < 0.3 then fontBodySize=math.max(8, fontBodySize-1) else fontBodySize=math.min(40, fontBodySize+1) end
+
+            -- Text Size: Start ~73% (sizeY2 = 67+6)
+            elseif relY > 0.73 and relY < 0.78 then
+                if relX < 0.25 then fontBodySize=math.max(8, fontBodySize-1)
+                elseif relX > 0.75 then fontBodySize=math.min(40, fontBodySize+1) end
                 changed=true; saveSettings(); presentHud("Text Size: "..fontBodySize, previewMenu.text)
 
-            -- App Toggle (Start ~85%)
-            elseif relY > 0.85 and relY < 0.91 and relX > 0.67 then
+            -- SECTION: EXCLUSION (Header at ~79%, sizeY2+8 isn't exactly right calc, let's recheck)
+            -- sizeY2 = 73. excY = 81. appRowY = 85.
+            -- App Toggle: Start ~85%
+            -- App Toggle (Start ~83%)
+            -- Moved exY to 79. AppRow = 83. Ends 88.
+            elseif relY > 0.83 and relY < 0.88 and relX > 0.67 then
                 local _, appID = getCurrentAppInfo()
                 if excludedApps[appID] then excludedApps[appID] = nil; if isBufferEnabled then _G.keyBuffer:show() end
                 else excludedApps[appID] = true; _G.keyBuffer:hide(); _G.hud:hide() end
                 changed=true; if _G.exclPanel:isShowing() then updateExclusionPanel() end
 
-            -- Bottom Buttons (Start ~93%)
-            elseif relY > 0.93 then
+            -- Footer Buttons (Start 89%)
+            elseif relY > 0.89 then
                 if relX < 0.45 then saveSettings(); alert.show("Vimualizer Settings Saved", 1)
                 elseif relX > 0.50 then updateExclusionPanel(); _G.exclPanel:show() end
             end
