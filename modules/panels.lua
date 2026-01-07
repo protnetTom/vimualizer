@@ -248,15 +248,15 @@ function panels.updateSnipPanel()
     for trigger, expansion in pairs(config.snippets) do table.insert(panels.sortedSnippets, {t=trigger, e=expansion}) end
     table.sort(panels.sortedSnippets, function(a,b) return a.t < b.t end)
 
-    local rowH = 28; local startY = 60
+    local rowH = 26; local startY = 60
     for i, item in ipairs(panels.sortedSnippets) do
-        local yVal = startY + ((i-1) * (rowH + 4))
-        if yVal > 620 then break end -- Fit more items
-        _G.snipPanel[#_G.snipPanel+1] = { type="rectangle", action="fill", fillColor={red=0.2,green=0.2,blue=0.2,alpha=1}, frame={x="5%", y=yVal, w="80%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
+        local yVal = startY + ((i-1) * (rowH + 2))
+        -- No break, snipH is 800 so we can fit many rows
+        _G.snipPanel[#_G.snipPanel+1] = { type="rectangle", action="fill", fillColor={red=0.15,green=0.15,blue=0.15,alpha=1}, frame={x="4%", y=yVal, w="82%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
         local displayStr = item.t .. " → " .. tostring(item.e)
-        _G.snipPanel[#_G.snipPanel+1] = { type="text", text=displayStr, textColor={white=0.9}, textSize=11, textAlignment="left", frame={x="8%", y=yVal+8, w="72%", h=rowH}, textFont=config.fontCode }
-        _G.snipPanel[#_G.snipPanel+1] = { type="rectangle", action="fill", fillColor=constants.btnColorExclude, frame={x="87%", y=yVal, w="8%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
-        _G.snipPanel[#_G.snipPanel+1] = { type="text", text="X", textColor={white=1}, textSize=14, textAlignment="center", frame={x="87%", y=yVal+7, w="8%", h=rowH} }
+        _G.snipPanel[#_G.snipPanel+1] = { type="text", text=displayStr, textColor={white=0.9}, textSize=10, textAlignment="left", frame={x="6%", y=yVal+7, w="78%", h=rowH}, textFont=config.fontUI }
+        _G.snipPanel[#_G.snipPanel+1] = { type="rectangle", action="fill", fillColor=constants.btnColorExclude, frame={x="88%", y=yVal, w="8%", h=rowH}, roundedRectRadii={xRadius=4,yRadius=4} }
+        _G.snipPanel[#_G.snipPanel+1] = { type="text", text="X", textColor={white=1}, textSize=12, textAlignment="center", frame={x="88%", y=yVal+6, w="8%", h=rowH} }
     end
 
     local btnY = 660

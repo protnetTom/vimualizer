@@ -5,6 +5,7 @@ local config = require("modules.config")
 
 snippets.buffer = ""
 snippets.maxBufferLen = 20
+snippets.isExpanding = false
 
 function snippets.expand(trigger, expansion)
     -- Delete the trigger
@@ -25,7 +26,9 @@ function snippets.expand(trigger, expansion)
     end
 
     -- Type the expansion
+    snippets.isExpanding = true
     eventtap.keyStrokes(finalExpansion)
+    timer.doAfter(0.1, function() snippets.isExpanding = false end)
 end
 
 function snippets.processKey(char, keyCode)
@@ -38,7 +41,7 @@ function snippets.processKey(char, keyCode)
         return false
     end
 
-    if not char or #char ~= 1 then 
+    if not char or char == "" then 
         -- Non-character key, usually resets the buffer
         snippets.buffer = ""
         return false 

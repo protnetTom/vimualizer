@@ -54,7 +54,21 @@ end
 function vim_logic.addToBuffer(str)
     table.insert(vim_logic.keyHistory, str)
     if #vim_logic.keyHistory > constants.bufferMaxLen then table.remove(vim_logic.keyHistory, 1) end
-    _G.keyBuffer[3].text = table.concat(vim_logic.keyHistory, " ")
+    
+    -- Build a styled string for the buffer to handle glyph font fallback
+    local baseAttr = { font={name=config.fontCode, size=34}, color=constants.bufferTxtColor, paragraphStyle={alignment="right"} }
+    local specialAttr = { font={name=config.fontUI, size=34}, color=constants.bufferTxtColor, paragraphStyle={alignment="right"} }
+    local styledBuf = styledtext.new("", baseAttr)
+    
+    for i, key in ipairs(vim_logic.keyHistory) do
+        -- Use code font for single-length alphanumeric/basic symbols
+        local isStandard = (#key == 1 and key:match("[%w%p%s]"))
+        local attr = isStandard and baseAttr or specialAttr
+        styledBuf = styledBuf .. styledtext.new(key .. (i < #vim_logic.keyHistory and " " or ""), attr)
+    end
+    
+    _G.keyBuffer[3].text = styledBuf
+
     if config.isActionInfoEnabled then 
         _G.keyBuffer[4].text = vim_logic.getSequenceDescription() 
     end

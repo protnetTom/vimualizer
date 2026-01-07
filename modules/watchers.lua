@@ -211,9 +211,10 @@ function watchers.init()
                     return true
                 end
 
-                local rowH = 28; local startY = 60; local relativeClickY = p.y - snF.y - startY
+                local rowH = 26; local startY = 60
+                local relativeClickY = p.y - snF.y - startY
                 if relativeClickY > 0 then
-                    local rowIndex = math.floor(relativeClickY / (rowH + 4)) + 1
+                    local rowIndex = math.floor(relativeClickY / (rowH + 2)) + 1
                     local relX = (p.x - snF.x) / snF.w
                     if relX > 0.85 and panels.sortedSnippets[rowIndex] then
                         local trigger = panels.sortedSnippets[rowIndex].t
@@ -265,6 +266,7 @@ function watchers.init()
 
     _G.modWatcher = eventtap.new({eventtap.event.types.flagsChanged}, function(e)
         ui.resetOpacity()
+        if snippets.isExpanding then return false end
         local _, bundleID = panels.getCurrentAppInfo()
         if not config.isMasterEnabled or config.isEditMode or vim_logic.currentState == constants.VIM_STATE.INSERT or config.excludedApps[bundleID] then return false end
 
@@ -288,6 +290,7 @@ function watchers.init()
 
     _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
         ui.resetOpacity()
+        if snippets.isExpanding then return false end
         local flags = e:getFlags(); local keyCode = e:getKeyCode(); local keyName = keycodes.map[keyCode]
 
         local _, bundleID = panels.getCurrentAppInfo()
@@ -330,7 +333,22 @@ function watchers.init()
         if vim_logic.currentState == constants.VIM_STATE.INSERT then 
             return snippets.processKey(char, keyCode)
         end
-        local bufferChar = char; if keyName=="space" then bufferChar="␣" elseif keyName=="return" then bufferChar="↵" elseif keyName=="backspace" then bufferChar="⌫" elseif flags.ctrl then bufferChar="^"..(keyName or "?") end
+        local bufferChar = char
+        if keyName == "up" then bufferChar = "↑"
+        elseif keyName == "down" then bufferChar = "↓"
+        elseif keyName == "left" then bufferChar = "←"
+        elseif keyName == "right" then bufferChar = "→"
+        elseif keyName == "pageup" then bufferChar = "⇞"
+        elseif keyName == "pagedown" then bufferChar = "⇟"
+        elseif keyName == "home" then bufferChar = "↖"
+        elseif keyName == "end" then bufferChar = "↘"
+        elseif keyName:match("^f%d+$") then bufferChar = "⟨"..keyName:upper().."⟩"
+        elseif keyName == "space" then bufferChar = "␣"
+        elseif keyName == "return" then bufferChar = "↵"
+        elseif keyName == "backspace" then bufferChar = "⌫"
+        elseif keyName == "tab" then bufferChar = "⇥"
+        elseif flags.ctrl then bufferChar = "^" .. (keyName or "?")
+        end
 
         if config.isMacroEnabled then
             if vim_logic.recordingRegister and bufferChar == "q" then vim_logic.recordingRegister = nil; vim_logic.addToBuffer("q (Stop)"); return false end
