@@ -17,6 +17,7 @@ local menus = require("modules.menus")
 local ui = require("modules.ui")
 local panels = require("modules.panels")
 local vim_logic = require("modules.vim_logic")
+local trainer = require("modules.trainer")
 
 local dragTarget = nil
 local dragOffset = {x=0, y=0}
@@ -77,6 +78,18 @@ function watchers.init()
                 elseif target == "toggle_macro" then config.isMacroEnabled = not config.isMacroEnabled; changed=true
                 elseif target == "toggle_aerospace" then config.isAerospaceEnabled = not config.isAerospaceEnabled; changed=true
                 elseif target == "toggle_tooltips" then config.isTooltipsEnabled = not config.isTooltipsEnabled; changed=true; _G.tooltipCanvas:hide()
+                elseif target == "toggle_trainer" then 
+                    if trainer.isActive then 
+                        trainer.stop() 
+                    else 
+                        trainer.start()
+                        _G.prefPanel:hide()
+                        _G.exclPanel:hide()
+                        config.isEditMode = false
+                        ui.updateDragHandles()
+                        vim_logic.resetToNormal()
+                    end
+                    changed = true
                 
                 elseif target == "btn_pos" then
                     config.hudPosIndex = config.hudPosIndex + 1; if config.hudPosIndex > 5 then config.hudPosIndex = 1 end
@@ -222,6 +235,7 @@ function watchers.init()
             if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
             if _G.statsPanel:isShowing() then _G.statsPanel:hide(); return true end
             if _G.prefPanel:isShowing() then _G.prefPanel:hide(); config.isEditMode=false; ui.updateDragHandles(); vim_logic.resetToNormal(); return true end
+            if trainer.isActive then trainer.stop(); return true end
             if _G.hud:isShowing() or #vim_logic.keyHistory > 0 then vim_logic.resetToNormal(); return false end
             if config.isHudEnabled and config.isEscapeMenuEnabled and not config.isEditMode and not config.excludedApps[bundleID] then 
                 ui.presentHud(menus.indexMenu.title, menus.indexMenu.text, constants.colorTitle); return false 
@@ -230,6 +244,13 @@ function watchers.init()
         end
 
         if not config.isMasterEnabled or config.isEditMode or config.excludedApps[bundleID] then return false end
+
+        -- Trainer Mode Interception
+        if trainer.isActive then
+            local char = e:getCharacters()
+            if trainer.processKey(char, keyName) then return true end
+        end
+
         local char = e:getCharacters()
 
         if config.isAerospaceEnabled and flags.alt then

@@ -28,63 +28,63 @@ function panels.initPrefs()
     -- SECTION: FEATURES (Index 3)
     _G.prefPanel[3] = { type="text", text="FEATURES", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="10%",y="8%",w="80%",h="3%"} }
 
-    for i=0,7 do
-        local yPos = 12 + (i * 5.5)
+    for i=0,8 do
+        local yPos = 12 + (i * 5.0)
         _G.prefPanel[4 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="4%"} }
         _G.prefPanel[5 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+1.2).."%",w="80%",h="4%"} }
     end
 
-    -- SECTION: APPEARANCE (Index 20)
+    -- SECTION: APPEARANCE (Index 22)
     local appY = 57
-    _G.prefPanel[20] = { type="text", text="APPEARANCE", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=appY.."%",w="80%",h="3%"} }
+    _G.prefPanel[22] = { type="text", text="APPEARANCE", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=appY.."%",w="80%",h="3%"} }
 
-    -- Position & Alignment (Indices 21-24)
+    -- Position & Alignment (Indices 23-26)
     local subY = 61
-    _G.prefPanel[21] = { type="rectangle", action="fill", frame={x="10%",y=subY.."%",w="38%",h="4%"} }
-    _G.prefPanel[22] = { type="text", textAlignment="center", frame={x="10%",y=(subY+1.2).."%",w="38%",h="4%"} }
-    _G.prefPanel[23] = { type="rectangle", action="fill", frame={x="52%",y=subY.."%",w="38%",h="4%"} }
-    _G.prefPanel[24] = { type="text", textAlignment="center", frame={x="52%",y=(subY+1.2).."%",w="38%",h="4%"} }
+    _G.prefPanel[23] = { type="rectangle", action="fill", frame={x="10%",y=subY.."%",w="38%",h="4%"} }
+    _G.prefPanel[24] = { type="text", textAlignment="center", frame={x="10%",y=(subY+1.2).."%",w="38%",h="4%"} }
+    _G.prefPanel[25] = { type="rectangle", action="fill", frame={x="52%",y=subY.."%",w="38%",h="4%"} }
+    _G.prefPanel[26] = { type="text", textAlignment="center", frame={x="52%",y=(subY+1.2).."%",w="38%",h="4%"} }
 
-    -- Title Size
+    -- Title Size (Indices 27-31)
     local sizeY1 = 66.5
-    _G.prefPanel[25] = { type="rectangle", action="fill", frame={x="10%",y=sizeY1.."%",w="15%",h="4%"} }
-    _G.prefPanel[26] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY1+0.6).."%",w="15%",h="4%"} }
-    _G.prefPanel[27] = { type="rectangle", action="fill", frame={x="75%",y=sizeY1.."%",w="15%",h="4%"} }
-    _G.prefPanel[28] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY1+0.6).."%",w="15%",h="4%"} }
-    _G.prefPanel[29] = { type="text", text="Title Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY1+0.9).."%",w="50%",h="4%"} }
+    _G.prefPanel[27] = { type="rectangle", action="fill", frame={x="10%",y=sizeY1.."%",w="15%",h="4%"} }
+    _G.prefPanel[28] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY1+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[29] = { type="rectangle", action="fill", frame={x="75%",y=sizeY1.."%",w="15%",h="4%"} }
+    _G.prefPanel[30] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY1+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[31] = { type="text", text="Title Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY1+0.9).."%",w="50%",h="4%"} }
 
-    -- Text Size
+    -- Text Size (Indices 32-36)
     local sizeY2 = 72
-    _G.prefPanel[30] = { type="rectangle", action="fill", frame={x="10%",y=sizeY2.."%",w="15%",h="4%"} }
-    _G.prefPanel[31] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
-    _G.prefPanel[32] = { type="rectangle", action="fill", frame={x="75%",y=sizeY2.."%",w="15%",h="4%"} }
-    _G.prefPanel[33] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
-    _G.prefPanel[34] = { type="text", text="Text Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY2+0.9).."%",w="50%",h="4%"} }
+    _G.prefPanel[32] = { type="rectangle", action="fill", frame={x="10%",y=sizeY2.."%",w="15%",h="4%"} }
+    _G.prefPanel[33] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[34] = { type="rectangle", action="fill", frame={x="75%",y=sizeY2.."%",w="15%",h="4%"} }
+    _G.prefPanel[35] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[36] = { type="text", text="Text Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY2+0.9).."%",w="50%",h="4%"} }
 
-    -- SMART FEATURES
+    -- SMART FEATURES (Indices 37-38)
     local smartY = 77.5
-    _G.prefPanel[35] = { type="rectangle", action="fill", frame={x="10%",y=smartY.."%",w="80%",h="4%"} }
-    _G.prefPanel[36] = { type="text", textAlignment="center", frame={x="10%",y=(smartY+1.2).."%",w="80%",h="4%"} }
+    _G.prefPanel[37] = { type="rectangle", action="fill", frame={x="10%",y=smartY.."%",w="80%",h="4%"} }
+    _G.prefPanel[38] = { type="text", textAlignment="center", frame={x="10%",y=(smartY+1.2).."%",w="80%",h="4%"} }
 
-    -- FONTS
+    -- FONTS (Indices 39-42)
     local fontY = 83
     _G.prefPanel[39] = { type="rectangle", action="fill", frame={x="10%",y=fontY.."%",w="38%",h="4%"} }
     _G.prefPanel[40] = { type="text", textAlignment="center", frame={x="10%",y=(fontY+1.2).."%",w="38%",h="4%"} }
     _G.prefPanel[41] = { type="rectangle", action="fill", frame={x="52%",y=fontY.."%",w="38%",h="4%"} }
     _G.prefPanel[42] = { type="text", textAlignment="center", frame={x="52%",y=(fontY+1.2).."%",w="38%",h="4%"} }
 
-    -- EXCLUSIONS
+    -- EXCLUSIONS (Index 43)
     local excY = 88.5
     _G.prefPanel[43] = { type="text", text="EXCLUSIONS", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=excY.."%",w="80%",h="3%"} }
 
-    -- App Row
+    -- App Row (Indices 44-47)
     local appRowY = 92
     _G.prefPanel[44] = { type="rectangle", action="fill", frame={x="10%",y=appRowY.."%",w="55%",h="3%"} }
     _G.prefPanel[45] = { type="text", text="App Name", textColor={white=1}, textSize=11, textAlignment="center", frame={x="10%",y=(appRowY+0.3).."%",w="55%",h="3%"} }
     _G.prefPanel[46] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="3%"} }
     _G.prefPanel[47] = { type="text", text="Toggle", textColor={white=1}, textSize=11, textAlignment="center", frame={x="67%",y=(appRowY+0.3).."%",w="23%",h="3%"} }
 
-    -- Footer
+    -- Footer (Indices 48-53)
     local footerY = 96
     _G.prefPanel[48] = { type="rectangle", action="fill", fillColor=constants.btnColorSave, frame={x="10%",y=footerY.."%",w="25%",h="2.2%"}, roundedRectRadii={xRadius=6,yRadius=6} }
     _G.prefPanel[49] = { type="text", text="Save", textColor={white=1}, textSize=14, textAlignment="center", frame={x="10%",y=(footerY+0.4).."%",w="25%",h="2.2%"} }
@@ -114,23 +114,27 @@ function panels.updatePrefsVisuals()
     styleBtn(12, config.isEscapeMenuEnabled, "Show Help Menu: "..(config.isEscapeMenuEnabled and "ON" or "OFF"))
     styleBtn(14, config.isMacroEnabled, "Macro Recording: "..(config.isMacroEnabled and "ON" or "OFF"))
     styleBtn(16, config.isAerospaceEnabled, "Aerospace Mode: "..(config.isAerospaceEnabled and "ON" or "OFF"))
-    styleBtn(18, config.isTooltipsEnabled, "Show Tooltips: "..(config.isTooltipsEnabled and "ON" or "OFF"))
+    styleBtn(18, config.isTooltipsEnabled, "Tooltips: "..(config.isTooltipsEnabled and "ON" or "OFF"))
+    
+    local trainer = require("modules.trainer")
+    styleBtn(20, trainer.isActive, "Trainer Mode: "..(trainer.isActive and "ON" or "OFF"))
 
+    -- APPEARANCE
     local posNames = {"Left", "TopRight", "BotRight", "Center", "Custom"}
-    styleActionBtn(21)
-    _G.prefPanel[22].text = styledtext.new("Position: "..posNames[config.hudPosIndex], {font={name=config.fontUIBold, size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    styleActionBtn(23)
+    _G.prefPanel[24].text = styledtext.new("Position: "..posNames[config.hudPosIndex], {font={name=config.fontUIBold, size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
     local alignLabel = "Align: " .. (config.hudTextAlignment:gsub("^%l", string.upper))
-    styleActionBtn(23)
-    _G.prefPanel[24].text = styledtext.new(alignLabel, {font={name=config.fontUIBold, size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    styleActionBtn(25)
+    _G.prefPanel[26].text = styledtext.new(alignLabel, {font={name=config.fontUIBold, size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
-    styleActionBtn(25); styleActionBtn(27)
-    _G.prefPanel[29].text = "Title Size: " .. config.fontTitleSize
+    styleActionBtn(27); styleActionBtn(29)
+    _G.prefPanel[31].text = "Title Size: " .. config.fontTitleSize
 
-    styleActionBtn(30); styleActionBtn(32)
-    _G.prefPanel[34].text = "Text Size: " .. config.fontBodySize
+    styleActionBtn(32); styleActionBtn(34)
+    _G.prefPanel[36].text = "Text Size: " .. config.fontBodySize
 
-    styleBtn(35, config.isReactiveOpacityEnabled, "Ghost Mode: "..(config.isReactiveOpacityEnabled and "ON" or "OFF"))
+    styleBtn(37, config.isReactiveOpacityEnabled, "Ghost Mode: "..(config.isReactiveOpacityEnabled and "ON" or "OFF"))
 
     styleActionBtn(39)
     _G.prefPanel[40].text = styledtext.new("Main Font", {font={name=config.fontUIBold, size=11}, color={white=1}, paragraphStyle={alignment="center"}})
@@ -225,15 +229,20 @@ function panels.updateExclusionPanel()
 end
 
 function panels.getSettingsTarget(relX, relY)
-    -- SECTION: FEATURES (Start 12%, Stride 5.5%, Height 4%)
-    if relY > 0.120 and relY < 0.160 then return "toggle_master"
-    elseif relY > 0.175 and relY < 0.215 then return "toggle_hud"
-    elseif relY > 0.230 and relY < 0.270 then return "toggle_buffer"
-    elseif relY > 0.285 and relY < 0.325 then return "toggle_action"
-    elseif relY > 0.340 and relY < 0.380 then return "toggle_entry"
-    elseif relY > 0.395 and relY < 0.435 then return "toggle_macro"
-    elseif relY > 0.450 and relY < 0.490 then return "toggle_aerospace"
-    elseif relY > 0.505 and relY < 0.545 then return "toggle_tooltips"
+    -- SECTION: FEATURES (Start 12%, Stride 5.0%, Height 4%)
+    -- Original: relY > 0.120 and relY < 0.160 then return "toggle_master"
+    -- New logic for features (0.12 to 0.56, 9 rows, 5% height each)
+    if relY > 0.11 and relY < 0.56 then
+        local row = math.floor((relY - 0.11) / 0.05)
+        if row == 0 then return "toggle_master"
+        elseif row == 1 then return "toggle_hud"
+        elseif row == 2 then return "toggle_buffer"
+        elseif row == 3 then return "toggle_action"
+        elseif row == 4 then return "toggle_entry"
+        elseif row == 5 then return "toggle_macro"
+        elseif row == 6 then return "toggle_aerospace"
+        elseif row == 7 then return "toggle_tooltips"
+        elseif row == 8 then return "toggle_trainer" end
     
     -- SECTION: APPEARANCE (Header 59%)
     elseif relY > 0.60 then

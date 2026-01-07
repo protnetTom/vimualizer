@@ -24,6 +24,7 @@ config.bufferX, config.bufferY = 0, 0 -- To be set in init or loaded
 config.fontUI = ".AppleSystemUIFont"
 config.fontUIBold = ".AppleSystemUIFontBold"
 config.fontCode = "Menlo"
+config.trainerDifficulty = 1
 config.excludedApps = {
     ["com.apple.loginwindow"] = true,
     ["com.apple.ScreenSaver.Engine"] = true
@@ -64,7 +65,8 @@ function config.save()
         fontCode = config.fontCode,
         fontUI = config.fontUI,
         fontUIBold = config.fontUIBold,
-        isReactiveOpacityEnabled = config.isReactiveOpacityEnabled
+        isReactiveOpacityEnabled = config.isReactiveOpacityEnabled,
+        trainerDifficulty = config.trainerDifficulty
     }
     json.write(settings, settingsFilePath, true, true)
 end
@@ -93,6 +95,7 @@ function config.load()
         if settings.fontUI then config.fontUI = settings.fontUI end
         if settings.fontUIBold then config.fontUIBold = settings.fontUIBold end
         if settings.isReactiveOpacityEnabled ~= nil then config.isReactiveOpacityEnabled = settings.isReactiveOpacityEnabled end
+        if settings.trainerDifficulty then config.trainerDifficulty = tonumber(settings.trainerDifficulty) end
     end
 end
 
