@@ -1,5 +1,7 @@
 local constants = {}
 
+constants.version = "v2.0.1"
+
 constants.screen = hs.screen.mainScreen():frame()
 
 -- HUD / BUFFER Geometry

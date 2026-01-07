@@ -55,7 +55,7 @@ hs.hotkey.bind({"cmd", "alt"}, "P", function()
 end)
 
 -- 5. STARTUP
-hs.alert.show("Vimualizer Refactored & Loaded")
+hs.alert.show("Vimualizer " .. constants.version .. " Loaded")
 ui.updateBufferGeometry()
 vim_logic.updateStateDisplay()
 if config.isBufferEnabled then _G.keyBuffer:show() end
