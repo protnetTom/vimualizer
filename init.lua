@@ -47,6 +47,7 @@ local excludedApps = {
 }
 
 -- Visual Settings
+-- Visual Settings
 local fontTitleSize = 32
 local fontBodySize = 20
 local hudPosIndex = 1
@@ -55,25 +56,30 @@ local customHudX, customHudY = 100, 100
 local maxHudWidth = 700
 local minHudWidth = 350
 local hudPadding = 30
-local hudBgColor = { red=0.1, green=0.1, blue=0.1, alpha=0.98 }
-local hudStrokeColor = { white=1, alpha=0.1 }
 local displayTime = 8.0
 
--- Colors
-local colorTitle = { red=1, green=0.9, blue=0.4, alpha=1 }
-local colorKey = { red=0.6, green=0.8, blue=1, alpha=1 }
-local colorDesc = { white=0.9, alpha=1 }
-local colorHeader = { white=0.6, alpha=1 }
-local colorAccent = { red=1, green=0.4, blue=0.4, alpha=1 }
-local colorInfo = { white=1, alpha=0.95 }
-local colorDrag = { red=0.2, green=0.8, blue=0.2, alpha=0.9 }
-local btnColorAction = {red=0.2, green=0.4, blue=0.8, alpha=1}
-local btnColorSave = {red=0.2, green=0.6, blue=0.2, alpha=1}
-local btnColorExclude = {red=0.8, green=0.2, blue=0.2, alpha=1}
-local panelColor = { red=0.1, green=0.1, blue=0.1, alpha=0.98 }
-local btnColorOn = {red=0.2,green=0.6,blue=0.2,alpha=1}
-local btnColorOff = {red=0.6,green=0.2,blue=0.2,alpha=1}
-local colorRec = { red=1, green=0.2, blue=0.2, alpha=1 }
+-- THEME: macOS Dark Mode
+local hudBgColor = { hex="#1e1e1e", alpha=0.90 } -- Dark, slightly translucent
+local hudStrokeColor = { white=1, alpha=0.15 } -- Subtle border
+local panelColor = { hex="#1e1e1e", alpha=0.95 }
+
+local colorTitle = { white=1, alpha=1 } -- SF Pro White
+local colorKey = { hex="#0A84FF", alpha=1 } -- macOS System Blue
+local colorDesc = { white=0.8, alpha=1 } -- Secondary Label Color
+local colorHeader = { white=0.6, alpha=1 } -- Tertiary Label Color
+local colorAccent = { hex="#FF453A", alpha=1 } -- macOS System Red
+local colorInfo = { white=0.9, alpha=1 }
+local colorRec = { hex="#FF453A", alpha=1 }
+
+local colorDrag = { hex="#30D158", alpha=0.9 } -- macOS System Green
+local btnColorAction = { hex="#0A84FF", alpha=1 }
+local btnColorSave = { hex="#30D158", alpha=1 }
+local btnColorExclude = { hex="#FF453A", alpha=1 }
+local btnColorOn = { hex="#30D158", alpha=1 }
+local btnColorOff = { hex="#FF453A", alpha=1 }
+
+-- CONSTANTS: Shadows
+local shadowSpec = { blurRadius=20, color={alpha=0.5, white=0}, offset={h=10, w=0} }
 
 local screen = hs.screen.mainScreen():frame()
 
@@ -293,14 +299,14 @@ end
 -- =================================================
 
 _G.hud = canvas.new({x=0,y=0,w=100,h=100})
-_G.hud[1] = { type="rectangle", action="fill", fillColor=hudBgColor, roundedRectRadii={xRadius=12,yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
+_G.hud[1] = { type="rectangle", action="fill", fillColor=hudBgColor, roundedRectRadii={xRadius=16,yRadius=16}, strokeColor=hudStrokeColor, strokeWidth=1, shadow=shadowSpec }
 _G.hud[2] = { type="text", text="", frame={x=0,y=0,w=0,h=0} }
 _G.hud[3] = { type="text", text="", frame={x=0,y=0,w=0,h=0} }
 _G.hud[4] = { type="rectangle", action="skip", fillColor=colorDrag, roundedRectRadii={xRadius=12,yRadius=12}, frame={x=0,y=0,w="100%",h=30} }
 _G.hud[5] = { type="text", action="skip", text="DRAG ME", textSize=11, textColor={white=1}, textAlignment="center", frame={x=0,y=9,w="100%",h=12} }
 
 _G.keyBuffer = canvas.new({x=bufferX, y=bufferY, w=bufferW, h=bufferH})
-_G.keyBuffer[1] = { type="rectangle", action="fill", fillColor=bufferBgColor, roundedRectRadii={xRadius=8,yRadius=8}, strokeColor={white=1,alpha=0.2}, strokeWidth=1 }
+_G.keyBuffer[1] = { type="rectangle", action="fill", fillColor=bufferBgColor, roundedRectRadii={xRadius=12,yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=1, shadow=shadowSpec }
 _G.keyBuffer[2] = { type="text", text="NORMAL", textColor=colorTitle, textSize=22, textAlignment="center", frame={x="0%",y="30%",w="25%",h="100%"} }
 _G.keyBuffer[3] = { type="text", text="", textColor=bufferTxtColor, textSize=34, textAlignment="right", frame={x="25%",y="5%",w="70%",h="60%"} }
 _G.keyBuffer[4] = { type="text", text="", textColor=colorInfo, textSize=15, textAlignment="right", frame={x="25%",y="60%",w="70%",h="30%"} }
@@ -392,7 +398,7 @@ local sortedExclusions = {}
 
 -- 1. INIT MAIN PREFS (New Sectioned Layout)
 local function initPrefs()
-    _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=12, yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
+    _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=hudStrokeColor, strokeWidth=1, shadow=shadowSpec }
     _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="5%"} }
 
     -- SECTION: FEATURES (Index 3)
@@ -512,7 +518,7 @@ end
 local function updateExclusionPanel()
     while #_G.exclPanel > 0 do _G.exclPanel[#_G.exclPanel] = nil end
 
-    _G.exclPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=12, yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=2 }
+    _G.exclPanel[1] = { type="rectangle", action="fill", fillColor=panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=hudStrokeColor, strokeWidth=1, shadow=shadowSpec }
     _G.exclPanel[2] = { type="text", text="Excluded Apps", textColor=colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="8%"} }
 
     sortedExclusions = {}
@@ -543,101 +549,25 @@ initPrefs(); updatePrefsVisuals()
 -- TOOLTIPS & HIT TESTING
 -- =================================================
 
-if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
-_G.tooltipCanvas = canvas.new({x=0,y=0,w=220,h=120}):level(hs.canvas.windowLevels.floating + 10)
 
--- 1. Outer Card Shadow/Bg
-_G.tooltipCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#333333", alpha=0.95}, roundedRectRadii={xRadius=10,yRadius=10}, strokeColor={white=1,alpha=1}, strokeWidth=2 }
-
--- 2. Title Text (Top)
-_G.tooltipCanvas[2] = { type="text", text="", textColor={white=1}, textSize=16, textAlignment="center", frame={x="5%",y="10px",w="90%",h="25px"} }
-
--- 3. Inner Description Box (White)
-_G.tooltipCanvas[3] = { type="rectangle", action="fill", fillColor={hex="#F0F0F0", alpha=1}, roundedRectRadii={xRadius=6,yRadius=6}, frame={x="10px",y="40px",w="200px",h="50px"} }
-
--- 4. Description Text (Black)
-_G.tooltipCanvas[4] = { type="text", text="", textColor={hex="#222222"}, textSize=13, textAlignment="center", frame={x="15px",y="45px",w="190px",h="40px"} }
-
--- 5. Badge Pill (Blue) - Bottom Center
-_G.tooltipCanvas[5] = { type="rectangle", action="fill", fillColor={hex="#007AFF", alpha=1}, roundedRectRadii={xRadius=8,yRadius=8}, frame={x="60px",y="100px",w="100px",h="20px"} }
-
--- 6. Badge Text
-_G.tooltipCanvas[6] = { type="text", text="SETTING", textColor={white=1}, textSize=12, textAlignment="center", frame={x="60px",y="102px",w="100px",h="20px"} }
-
-
-local tooltips = {
-    toggle_master = "Master Switch\nTurn entire Vimualizer On or Off.",
-    toggle_hud = "Key Hints\nDisplay popup suggestions when typing keys.",
-    toggle_buffer = "Keystrokes\nShow the running history of typed keys.",
-    toggle_action = "Actions\nShow text description of what keys do (e.g. 'Delete Word').",
-    toggle_entry = "Help Menu\nPress 'Escape' to see the main cheat sheet.",
-    toggle_macro = "Macros\nAllow recording and replaying macros with 'q'.",
-    toggle_aerospace = "Aerospace\nShow workspaces and window commands when holding Option.",
-    btn_pos = "HUD Position\nMove the popup to different screen corners.",
-    btn_align = "Alignment\nAlign text Left, Center, or Right.",
-    btn_title_minus = "Title Size\nDecrease the size of the title text.",
-    btn_title_plus = "Title Size\nIncrease the size of the title text.",
-    btn_text_minus = "Text Size\nDecrease the size of the body text.",
-    btn_text_plus = "Text Size\nIncrease the size of the body text.",
-    toggle_app = "App Filter\nDon't run Vimualizer in this specific app.",
-    btn_save = "Save Config\nPersist current configuration to disk.",
-    btn_exclusions = "Exclusions\nSee full list of ignored applications.",
-    btn_close = "Close\nExit the configuration panel."
-}
-
-local function getSettingsTarget(relX, relY)
-    -- Close Button (Top Right 93-98%)
-    if relY > 0.02 and relY < 0.07 and relX > 0.93 and relX < 0.98 then return "btn_close" end
-
-    -- SECTION: FEATURES (Start ~12%)
-    if relY > 0.12 and relY < 0.17 then return "toggle_master"
-    elseif relY > 0.18 and relY < 0.23 then return "toggle_hud"
-    elseif relY > 0.24 and relY < 0.29 then return "toggle_buffer"
-    elseif relY > 0.30 and relY < 0.35 then return "toggle_action"
-    elseif relY > 0.36 and relY < 0.41 then return "toggle_entry"
-    elseif relY > 0.42 and relY < 0.47 then return "toggle_macro"
-    elseif relY > 0.48 and relY < 0.53 then return "toggle_aerospace"
-    
-    -- SECTION: APPEARANCE
-    elseif relY > 0.60 and relY < 0.65 then
-        if relX < 0.5 then return "btn_pos" else return "btn_align" end
-    
-    elseif relY > 0.67 and relY < 0.72 then
-        if relX < 0.25 then return "btn_title_minus"
-        elseif relX > 0.75 then return "btn_title_plus" end
-    
-    elseif relY > 0.73 and relY < 0.78 then
-        if relX < 0.25 then return "btn_text_minus"
-        elseif relX > 0.75 then return "btn_text_plus" end
-    
-    -- SECTION: EXCLUSION
-    elseif relY > 0.83 and relY < 0.88 and relX > 0.67 then return "toggle_app"
-    
-    -- FOOTER
-    elseif relY > 0.89 then
-        if relX < 0.45 then return "btn_save"
-        elseif relX > 0.50 then return "btn_exclusions" end
-    end
-    return nil
-end
 
 if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
 _G.tooltipCanvas = canvas.new({x=0,y=0,w=220,h=120}):level(hs.canvas.windowLevels.floating + 10)
 
 -- 1. Outer Card Shadow/Bg
-_G.tooltipCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#333333", alpha=0.95}, roundedRectRadii={xRadius=10,yRadius=10}, strokeColor={white=1,alpha=1}, strokeWidth=2 }
+_G.tooltipCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#2c2c2e", alpha=0.98}, roundedRectRadii={xRadius=10,yRadius=10}, strokeColor={white=1,alpha=0.1}, strokeWidth=1, shadow={ blurRadius=10, color={alpha=0.5, white=0}, offset={h=5, w=0} } }
 
 -- 2. Title Text (Top)
 _G.tooltipCanvas[2] = { type="text", text="", textColor={white=1}, textSize=16, textAlignment="center", frame={x="5%",y="10px",w="90%",h="25px"} }
 
--- 3. Inner Description Box (White)
-_G.tooltipCanvas[3] = { type="rectangle", action="fill", fillColor={hex="#F0F0F0", alpha=1}, roundedRectRadii={xRadius=6,yRadius=6}, frame={x="10px",y="40px",w="200px",h="50px"} }
+-- 3. Inner Description Box (Darker Gray)
+_G.tooltipCanvas[3] = { type="rectangle", action="fill", fillColor={hex="#3a3a3c", alpha=1}, roundedRectRadii={xRadius=6,yRadius=6}, frame={x="10px",y="40px",w="200px",h="50px"} }
 
--- 4. Description Text (Black)
-_G.tooltipCanvas[4] = { type="text", text="", textColor={hex="#222222"}, textSize=13, textAlignment="center", frame={x="15px",y="45px",w="190px",h="40px"} }
+-- 4. Description Text (White)
+_G.tooltipCanvas[4] = { type="text", text="", textColor={white=0.9}, textSize=13, textAlignment="center", frame={x="15px",y="45px",w="190px",h="40px"} }
 
--- 5. Badge Pill (Blue) - Bottom Center
-_G.tooltipCanvas[5] = { type="rectangle", action="fill", fillColor={hex="#007AFF", alpha=1}, roundedRectRadii={xRadius=8,yRadius=8}, frame={x="60px",y="100px",w="100px",h="20px"} }
+-- 5. Badge Pill (System Blue) - Bottom Center
+_G.tooltipCanvas[5] = { type="rectangle", action="fill", fillColor={hex="#0A84FF", alpha=1}, roundedRectRadii={xRadius=8,yRadius=8}, frame={x="60px",y="100px",w="100px",h="20px"} }
 
 -- 6. Badge Text
 _G.tooltipCanvas[6] = { type="text", text="SETTING", textColor={white=1}, textSize=12, textAlignment="center", frame={x="60px",y="102px",w="100px",h="20px"} }
