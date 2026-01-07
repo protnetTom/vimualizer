@@ -1,0 +1,324 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Vimualizer-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources",
+      "importPath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "Vimualizer",
+      "moduleOutputPath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules/Vimualizer.swiftmodule",
+      "objects" : [
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "Vimualizer_main",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-parse-as-library",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "vimualizerswift"
+      ],
+      "outputFileMapPath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules/Vimualizer.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift",
+        "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift"
+      ],
+      "tempsPath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Vimualizer" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Vimualizer",
+      "-package-name",
+      "vimualizerswift",
+      "-c",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift",
+      "-I",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "Vimualizer_main",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-parse-as-library",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "vimualizerswift",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Vimualizer" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist"
+    },
+    "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources"
+    },
+    "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList"
+    },
+    "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

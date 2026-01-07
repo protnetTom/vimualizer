@@ -1,0 +1,81 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "PackageStructure": ["<PackageStructure>"]
+  "Vimualizer-arm64-apple-macosx26.0-debug.exe": ["<Vimualizer-arm64-apple-macosx26.0-debug.exe>"]
+  "Vimualizer-arm64-apple-macosx26.0-debug.module": ["<Vimualizer-arm64-apple-macosx26.0-debug.module>"]
+  "main": ["<Vimualizer-arm64-apple-macosx26.0-debug.exe>","<Vimualizer-arm64-apple-macosx26.0-debug.module>"]
+  "test": ["<Vimualizer-arm64-apple-macosx26.0-debug.exe>","<Vimualizer-arm64-apple-macosx26.0-debug.module>"]
+default: "main"
+nodes:
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer":
+    is-mutated: true
+commands:
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist":
+    tool: write-auxiliary-file
+    inputs: ["<entitlement-plist>","<com.apple.security.get-task-allow>"]
+    outputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist"]
+    description: "Write auxiliary file /Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist"
+
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift"]
+    outputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources"]
+    description: "Write auxiliary file /Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources"
+
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o"]
+    outputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList"
+
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<Vimualizer-arm64-apple-macosx26.0-debug.exe>":
+    tool: phony
+    inputs: ["<Vimualizer-arm64-apple-macosx26.0-debug.exe-CodeSigning>"]
+    outputs: ["<Vimualizer-arm64-apple-macosx26.0-debug.exe>"]
+
+  "<Vimualizer-arm64-apple-macosx26.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules/Vimualizer.swiftmodule"]
+    outputs: ["<Vimualizer-arm64-apple-macosx26.0-debug.module>"]
+
+  "C.Vimualizer-arm64-apple-macosx26.0-debug.exe":
+    tool: shell
+    inputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList"]
+    outputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/Vimualizer"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug","-o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer","-module-name","Vimualizer","-Xlinker","-no_warn_duplicate_libraries","-emit-executable","-Xlinker","-alias","-Xlinker","_Vimualizer_main","-Xlinker","_main","-Xlinker","-rpath","-Xlinker","@loader_path","@/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules/Vimualizer.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.Vimualizer-arm64-apple-macosx26.0-debug.exe-entitlements":
+    tool: shell
+    inputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist"]
+    outputs: ["<Vimualizer-arm64-apple-macosx26.0-debug.exe-CodeSigning>"]
+    description: "Applying debug entitlements to ./.build/arm64-apple-macosx/debug/Vimualizer"
+    args: ["codesign","--force","--sign","-","--entitlements","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer-entitlement.plist","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer"]
+
+  "C.Vimualizer-arm64-apple-macosx26.0-debug.module":
+    tool: shell
+    inputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources"]
+    outputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules/Vimualizer.swiftmodule"]
+    description: "Compiling Swift Module 'Vimualizer' (4 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","Vimualizer","-emit-dependencies","-emit-module","-emit-module-path","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules/Vimualizer.swiftmodule","-output-file-map","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/output-file-map.json","-incremental","-c","@/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/sources","-I","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j12","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-entry-point-function-name","-Xfrontend","Vimualizer_main","-color-diagnostics","-swift-version","5","-parse-as-library","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","vimualizerswift"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Package.swift","/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

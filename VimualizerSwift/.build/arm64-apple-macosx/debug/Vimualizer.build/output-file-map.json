@@ -1,0 +1,33 @@
+{
+  "": {
+    "swift-dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/master.swiftdeps"
+  },
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/HudView.swift": {
+    "dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.d",
+    "object": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swift.o",
+    "swiftmodule": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView~partial.swiftmodule",
+    "swift-dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.swiftdeps",
+    "diagnostics": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/HudView.dia"
+  },
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/SettingsView.swift": {
+    "dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.d",
+    "object": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swift.o",
+    "swiftmodule": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.swiftdeps",
+    "diagnostics": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/SettingsView.dia"
+  },
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimLogic.swift": {
+    "dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.d",
+    "object": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swift.o",
+    "swiftmodule": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic~partial.swiftmodule",
+    "swift-dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.swiftdeps",
+    "diagnostics": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimLogic.dia"
+  },
+  "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/Sources/Vimualizer/VimualizerApp.swift": {
+    "dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.d",
+    "object": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swift.o",
+    "swiftmodule": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.swiftdeps",
+    "diagnostics": "/Users/thomass/code/protectednet/Vimualizer/VimualizerSwift/.build/arm64-apple-macosx/debug/Vimualizer.build/VimualizerApp.dia"
+  }
+}
