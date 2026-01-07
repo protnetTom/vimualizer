@@ -68,6 +68,9 @@ fi
 
 # 5. INSTALL VIMUALIZER
 echo "📦 Installing Vimualizer..."
+# Remove existing to handle symlinks correctly
+rm -rf ~/.hammerspoon/init.lua
+rm -rf ~/.hammerspoon/modules
 cp init.lua ~/.hammerspoon/init.lua
 cp -R modules ~/.hammerspoon/
 
