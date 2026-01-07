@@ -34,6 +34,7 @@ local isActionInfoEnabled = true
 local isAerospaceEnabled = false
 local isEscapeMenuEnabled = true
 local isMacroEnabled = true
+local isTooltipsEnabled = true
 local isEditMode = false
 
 -- HUD Text Alignment ("left", "center", "right")
@@ -84,7 +85,7 @@ local bufferBgColor = { red=0.15, green=0.15, blue=0.15, alpha=0.95 }
 local bufferTxtColor = { red=0.6, green=1, blue=0.6, alpha=1 }
 
 -- MAIN PREFS GEOMETRY
-local prefW, prefH = 450, 850
+local prefW, prefH = 450, 950
 local prefX, prefY = (screen.w - prefW) / 2, (screen.h - prefH) / 2
 
 -- EXCLUSION LIST GEOMETRY
@@ -116,6 +117,7 @@ local function saveSettings()
         isAerospaceEnabled = isAerospaceEnabled,
         isEscapeMenuEnabled = isEscapeMenuEnabled,
         isMacroEnabled = isMacroEnabled,
+        isTooltipsEnabled = isTooltipsEnabled,
         hudTextAlignment = hudTextAlignment, -- SAVE ALIGNMENT
         excludedApps = cleanExclusions,
         fontTitleSize = fontTitleSize,
@@ -139,6 +141,7 @@ local function loadSettings()
         if settings.isAerospaceEnabled ~= nil then isAerospaceEnabled = settings.isAerospaceEnabled end
         if settings.isEscapeMenuEnabled ~= nil then isEscapeMenuEnabled = settings.isEscapeMenuEnabled end
         if settings.isMacroEnabled ~= nil then isMacroEnabled = settings.isMacroEnabled end
+        if settings.isTooltipsEnabled ~= nil then isTooltipsEnabled = settings.isTooltipsEnabled end
         if settings.hudTextAlignment ~= nil then hudTextAlignment = settings.hudTextAlignment end -- LOAD ALIGNMENT
         if settings.excludedApps then excludedApps = settings.excludedApps end
         if settings.fontTitleSize then fontTitleSize = tonumber(settings.fontTitleSize) end
@@ -395,65 +398,61 @@ local function initPrefs()
     -- SECTION: FEATURES (Index 3)
     _G.prefPanel[3] = { type="text", text="FEATURES", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y="8%",w="80%",h="3%"} }
 
-    -- 7 Feature Buttons (Indices 4-17)
-    -- Master, Sug, Buffer, Action, Entry, Macro, Aerospace
-    for i=0,6 do
-        local yPos = 12 + (i * 6)
-        _G.prefPanel[4 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="5%"} }
-        -- Nudged from 0.9 to 1.2
-        _G.prefPanel[5 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+1.2).."%",w="80%",h="5%"} }
+    -- 8 Feature Buttons (Indices 4-19)
+    -- Master, Sug, Buffer, Action, Entry, Macro, Aerospace, Tooltips
+    -- Start 12%, Stride 5.5%, Height 4%
+    for i=0,7 do
+        local yPos = 12 + (i * 5.5)
+        _G.prefPanel[4 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="4%"} }
+        -- Nudged from 1.2 to 0.9 (smaller height)
+        _G.prefPanel[5 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+0.9).."%",w="80%",h="4%"} }
     end
 
-    -- SECTION: APPEARANCE (Index 18)
-    local appY = 56
-    _G.prefPanel[18] = { type="text", text="APPEARANCE", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=appY.."%",w="80%",h="3%"} }
+    -- SECTION: APPEARANCE (Index 20)
+    -- Start 59%
+    local appY = 59
+    _G.prefPanel[20] = { type="text", text="APPEARANCE", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=appY.."%",w="80%",h="3%"} }
 
-    -- Position & Alignment (Indices 19-22)
-    local subY = appY + 4
-    _G.prefPanel[19] = { type="rectangle", action="fill", frame={x="10%",y=subY.."%",w="38%",h="5%"} }
-    -- Nudged from 1.0 to 1.3
-    _G.prefPanel[20] = { type="text", textAlignment="center", frame={x="10%",y=(subY+1.3).."%",w="38%",h="5%"} }
-    _G.prefPanel[21] = { type="rectangle", action="fill", frame={x="52%",y=subY.."%",w="38%",h="5%"} }
-    _G.prefPanel[22] = { type="text", textAlignment="center", frame={x="52%",y=(subY+1.3).."%",w="38%",h="5%"} }
+    -- Position & Alignment (Indices 21-24)
+    local subY = 63 -- 63%
+    _G.prefPanel[21] = { type="rectangle", action="fill", frame={x="10%",y=subY.."%",w="38%",h="4%"} }
+    _G.prefPanel[22] = { type="text", textAlignment="center", frame={x="10%",y=(subY+0.9).."%",w="38%",h="4%"} }
+    _G.prefPanel[23] = { type="rectangle", action="fill", frame={x="52%",y=subY.."%",w="38%",h="4%"} }
+    _G.prefPanel[24] = { type="text", textAlignment="center", frame={x="52%",y=(subY+0.9).."%",w="38%",h="4%"} }
 
-    -- Title Size (Indices 23-27)
-    local sizeY1 = subY + 7
-    _G.prefPanel[23] = { type="rectangle", action="fill", frame={x="10%",y=sizeY1.."%",w="15%",h="5%"} } -- Minus
-    -- Nudged from 0.7 to 1.0
-    _G.prefPanel[24] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY1+1.0).."%",w="15%",h="5%"} }
-    _G.prefPanel[25] = { type="rectangle", action="fill", frame={x="75%",y=sizeY1.."%",w="15%",h="5%"} } -- Plus
-    _G.prefPanel[26] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY1+1.0).."%",w="15%",h="5%"} }
-    _G.prefPanel[27] = { type="text", text="Title Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY1+1.2).."%",w="50%",h="5%"} }
+    -- Title Size (Indices 25-29)
+    local sizeY1 = 70 -- 70%
+    _G.prefPanel[25] = { type="rectangle", action="fill", frame={x="10%",y=sizeY1.."%",w="15%",h="4%"} }
+    _G.prefPanel[26] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY1+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[27] = { type="rectangle", action="fill", frame={x="75%",y=sizeY1.."%",w="15%",h="4%"} }
+    _G.prefPanel[28] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY1+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[29] = { type="text", text="Title Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY1+0.9).."%",w="50%",h="4%"} }
 
-    -- Text Size (Indices 28-32)
-    local sizeY2 = sizeY1 + 6
-    _G.prefPanel[28] = { type="rectangle", action="fill", frame={x="10%",y=sizeY2.."%",w="15%",h="5%"} } -- Minus
-    _G.prefPanel[29] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY2+1.0).."%",w="15%",h="5%"} }
-    _G.prefPanel[30] = { type="rectangle", action="fill", frame={x="75%",y=sizeY2.."%",w="15%",h="5%"} } -- Plus
-    _G.prefPanel[31] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY2+1.0).."%",w="15%",h="5%"} }
-    _G.prefPanel[32] = { type="text", text="Text Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY2+1.2).."%",w="50%",h="5%"} }
+    -- Text Size (Indices 30-34)
+    local sizeY2 = 76 -- 76%
+    _G.prefPanel[30] = { type="rectangle", action="fill", frame={x="10%",y=sizeY2.."%",w="15%",h="4%"} }
+    _G.prefPanel[31] = { type="text", text="-", textColor={white=1}, textSize=20, textAlignment="center", frame={x="10%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[32] = { type="rectangle", action="fill", frame={x="75%",y=sizeY2.."%",w="15%",h="4%"} }
+    _G.prefPanel[33] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
+    _G.prefPanel[34] = { type="text", text="Text Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY2+0.9).."%",w="50%",h="4%"} }
 
-    -- SECTION: EXCLUSIONS (Index 33)
-    -- Moved up from +8 (81%) to +6 (79%) to make room for footer
-    local excY = sizeY2 + 6
-    _G.prefPanel[33] = { type="text", text="EXCLUSIONS", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=excY.."%",w="80%",h="3%"} }
+    -- SECTION: EXCLUSIONS (Index 35)
+    local excY = 83 -- 83%
+    _G.prefPanel[35] = { type="text", text="EXCLUSIONS", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=excY.."%",w="80%",h="3%"} }
 
-    -- App Toggle (Indices 34-37)
-    local appRowY = excY + 4
-    _G.prefPanel[34] = { type="rectangle", action="fill", frame={x="10%",y=appRowY.."%",w="55%",h="5%"} }
-    -- Nudged from 1.0 to 1.3
-    _G.prefPanel[35] = { type="text", text="App Name", textColor={white=1}, textSize=13, textAlignment="center", frame={x="10%",y=(appRowY+1.3).."%",w="55%",h="5%"} }
-    _G.prefPanel[36] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="5%"} }
-    _G.prefPanel[37] = { type="text", text="Toggle", textColor={white=1}, textSize=13, textAlignment="center", frame={x="67%",y=(appRowY+1.3).."%",w="23%",h="5%"} }
+    -- App Toggle (Indices 36-39)
+    local appRowY = 87 -- 87%
+    _G.prefPanel[36] = { type="rectangle", action="fill", frame={x="10%",y=appRowY.."%",w="55%",h="4%"} }
+    _G.prefPanel[37] = { type="text", text="App Name", textColor={white=1}, textSize=13, textAlignment="center", frame={x="10%",y=(appRowY+0.9).."%",w="55%",h="4%"} }
+    _G.prefPanel[38] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="4%"} }
+    _G.prefPanel[39] = { type="text", text="Toggle", textColor={white=1}, textSize=13, textAlignment="center", frame={x="67%",y=(appRowY+0.9).."%",w="23%",h="4%"} }
 
-    -- Footer Buttons (Indices 38-41)
-    -- Reverted to 5% height. Moved Y to 89% to leave ~6% margin at bottom.
-    local footerY = 89
-    _G.prefPanel[38] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=footerY.."%",w="35%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    -- Height 5% -> Offset 1.2%
-    _G.prefPanel[39] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(footerY+1.2).."%",w="35%",h="5%"} }
-    _G.prefPanel[40] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=footerY.."%",w="40%",h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[41] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(footerY+1.2).."%",w="40%",h="5%"} }
+    -- Footer Buttons (Indices 40-43)
+    local footerY = 93 -- 93-97%
+    _G.prefPanel[40] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=footerY.."%",w="35%",h="4%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[41] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(footerY+0.9).."%",w="35%",h="4%"} }
+    _G.prefPanel[42] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=footerY.."%",w="40%",h="4%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[43] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(footerY+0.9).."%",w="40%",h="4%"} }
 end
 
 local function updatePrefsVisuals()
@@ -476,36 +475,37 @@ local function updatePrefsVisuals()
     styleBtn(12, isEscapeMenuEnabled, "Show Help Menu: "..(isEscapeMenuEnabled and "ON" or "OFF"))
     styleBtn(14, isMacroEnabled, "Macro Recording: "..(isMacroEnabled and "ON" or "OFF"))
     styleBtn(16, isAerospaceEnabled, "Aerospace Mode: "..(isAerospaceEnabled and "ON" or "OFF"))
+    styleBtn(18, isTooltipsEnabled, "Show Tooltips: "..(isTooltipsEnabled and "ON" or "OFF"))
 
-    -- Appearance: Position (19,20)
+    -- Appearance: Position (21,22)
     local posNames = {"Left", "TopRight", "BotRight", "Center", "Custom"}
-    styleActionBtn(19)
-    _G.prefPanel[20].text = styledtext.new("Position: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
-
-    -- Appearance: Alignment (21,22)
-    local alignLabel = "Align: " .. (hudTextAlignment:gsub("^%l", string.upper))
     styleActionBtn(21)
-    _G.prefPanel[22].text = styledtext.new(alignLabel, {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[22].text = styledtext.new("Position: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
-    -- Appearance: Title Size (23-27)
-    styleActionBtn(23); styleActionBtn(25)
-    _G.prefPanel[27].text = "Title Size: " .. fontTitleSize
+    -- Appearance: Alignment (23,24)
+    local alignLabel = "Align: " .. (hudTextAlignment:gsub("^%l", string.upper))
+    styleActionBtn(23)
+    _G.prefPanel[24].text = styledtext.new(alignLabel, {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
-    -- Appearance: Text Size (28-32)
-    styleActionBtn(28); styleActionBtn(30)
-    _G.prefPanel[32].text = "Text Size: " .. fontBodySize
+    -- Appearance: Title Size (25-29)
+    styleActionBtn(25); styleActionBtn(27)
+    _G.prefPanel[29].text = "Title Size: " .. fontTitleSize
 
-    -- Exclusions (34-37)
+    -- Appearance: Text Size (30-34)
+    styleActionBtn(30); styleActionBtn(32)
+    _G.prefPanel[34].text = "Text Size: " .. fontBodySize
+
+    -- Exclusions (36-39)
     local appName, appID = getCurrentAppInfo()
     local isExcluded = excludedApps[appID] == true
     -- App Name Box
-    _G.prefPanel[34].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}
-    _G.prefPanel[34].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[35].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=13}, color={white=0.9}, paragraphStyle={alignment="center"}})
-    -- Toggle Box
-    _G.prefPanel[36].fillColor = isExcluded and btnColorOff or btnColorOn
+    _G.prefPanel[36].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}
     _G.prefPanel[36].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[37].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=13}, color={white=1}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[37].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=13}, color={white=0.9}, paragraphStyle={alignment="center"}})
+    -- Toggle Box
+    _G.prefPanel[38].fillColor = isExcluded and btnColorOff or btnColorOn
+    _G.prefPanel[38].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[39].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=13}, color={white=1}, paragraphStyle={alignment="center"}})
 end
 
 -- 2. EXCLUSION LIST PANEL
@@ -540,8 +540,239 @@ end
 initPrefs(); updatePrefsVisuals()
 
 -- =================================================
--- INTERACTION WATCHER (Adjusted for Split Row)
+-- TOOLTIPS & HIT TESTING
 -- =================================================
+
+if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
+_G.tooltipCanvas = canvas.new({x=0,y=0,w=220,h=120}):level(hs.canvas.windowLevels.floating + 10)
+
+-- 1. Outer Card Shadow/Bg
+_G.tooltipCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#333333", alpha=0.95}, roundedRectRadii={xRadius=10,yRadius=10}, strokeColor={white=1,alpha=1}, strokeWidth=2 }
+
+-- 2. Title Text (Top)
+_G.tooltipCanvas[2] = { type="text", text="", textColor={white=1}, textSize=16, textAlignment="center", frame={x="5%",y="10px",w="90%",h="25px"} }
+
+-- 3. Inner Description Box (White)
+_G.tooltipCanvas[3] = { type="rectangle", action="fill", fillColor={hex="#F0F0F0", alpha=1}, roundedRectRadii={xRadius=6,yRadius=6}, frame={x="10px",y="40px",w="200px",h="50px"} }
+
+-- 4. Description Text (Black)
+_G.tooltipCanvas[4] = { type="text", text="", textColor={hex="#222222"}, textSize=13, textAlignment="center", frame={x="15px",y="45px",w="190px",h="40px"} }
+
+-- 5. Badge Pill (Blue) - Bottom Center
+_G.tooltipCanvas[5] = { type="rectangle", action="fill", fillColor={hex="#007AFF", alpha=1}, roundedRectRadii={xRadius=8,yRadius=8}, frame={x="60px",y="100px",w="100px",h="20px"} }
+
+-- 6. Badge Text
+_G.tooltipCanvas[6] = { type="text", text="SETTING", textColor={white=1}, textSize=12, textAlignment="center", frame={x="60px",y="102px",w="100px",h="20px"} }
+
+
+local tooltips = {
+    toggle_master = "Master Switch\nTurn entire Vimualizer On or Off.",
+    toggle_hud = "Key Hints\nDisplay popup suggestions when typing keys.",
+    toggle_buffer = "Keystrokes\nShow the running history of typed keys.",
+    toggle_action = "Actions\nShow text description of what keys do (e.g. 'Delete Word').",
+    toggle_entry = "Help Menu\nPress 'Escape' to see the main cheat sheet.",
+    toggle_macro = "Macros\nAllow recording and replaying macros with 'q'.",
+    toggle_aerospace = "Aerospace\nShow workspaces and window commands when holding Option.",
+    btn_pos = "HUD Position\nMove the popup to different screen corners.",
+    btn_align = "Alignment\nAlign text Left, Center, or Right.",
+    btn_title_minus = "Title Size\nDecrease the size of the title text.",
+    btn_title_plus = "Title Size\nIncrease the size of the title text.",
+    btn_text_minus = "Text Size\nDecrease the size of the body text.",
+    btn_text_plus = "Text Size\nIncrease the size of the body text.",
+    toggle_app = "App Filter\nDon't run Vimualizer in this specific app.",
+    btn_save = "Save Config\nPersist current configuration to disk.",
+    btn_exclusions = "Exclusions\nSee full list of ignored applications.",
+    btn_close = "Close\nExit the configuration panel."
+}
+
+local function getSettingsTarget(relX, relY)
+    -- Close Button (Top Right 93-98%)
+    if relY > 0.02 and relY < 0.07 and relX > 0.93 and relX < 0.98 then return "btn_close" end
+
+    -- SECTION: FEATURES (Start ~12%)
+    if relY > 0.12 and relY < 0.17 then return "toggle_master"
+    elseif relY > 0.18 and relY < 0.23 then return "toggle_hud"
+    elseif relY > 0.24 and relY < 0.29 then return "toggle_buffer"
+    elseif relY > 0.30 and relY < 0.35 then return "toggle_action"
+    elseif relY > 0.36 and relY < 0.41 then return "toggle_entry"
+    elseif relY > 0.42 and relY < 0.47 then return "toggle_macro"
+    elseif relY > 0.48 and relY < 0.53 then return "toggle_aerospace"
+    
+    -- SECTION: APPEARANCE
+    elseif relY > 0.60 and relY < 0.65 then
+        if relX < 0.5 then return "btn_pos" else return "btn_align" end
+    
+    elseif relY > 0.67 and relY < 0.72 then
+        if relX < 0.25 then return "btn_title_minus"
+        elseif relX > 0.75 then return "btn_title_plus" end
+    
+    elseif relY > 0.73 and relY < 0.78 then
+        if relX < 0.25 then return "btn_text_minus"
+        elseif relX > 0.75 then return "btn_text_plus" end
+    
+    -- SECTION: EXCLUSION
+    elseif relY > 0.83 and relY < 0.88 and relX > 0.67 then return "toggle_app"
+    
+    -- FOOTER
+    elseif relY > 0.89 then
+        if relX < 0.45 then return "btn_save"
+        elseif relX > 0.50 then return "btn_exclusions" end
+    end
+    return nil
+end
+
+if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
+_G.tooltipCanvas = canvas.new({x=0,y=0,w=220,h=120}):level(hs.canvas.windowLevels.floating + 10)
+
+-- 1. Outer Card Shadow/Bg
+_G.tooltipCanvas[1] = { type="rectangle", action="fill", fillColor={hex="#333333", alpha=0.95}, roundedRectRadii={xRadius=10,yRadius=10}, strokeColor={white=1,alpha=1}, strokeWidth=2 }
+
+-- 2. Title Text (Top)
+_G.tooltipCanvas[2] = { type="text", text="", textColor={white=1}, textSize=16, textAlignment="center", frame={x="5%",y="10px",w="90%",h="25px"} }
+
+-- 3. Inner Description Box (White)
+_G.tooltipCanvas[3] = { type="rectangle", action="fill", fillColor={hex="#F0F0F0", alpha=1}, roundedRectRadii={xRadius=6,yRadius=6}, frame={x="10px",y="40px",w="200px",h="50px"} }
+
+-- 4. Description Text (Black)
+_G.tooltipCanvas[4] = { type="text", text="", textColor={hex="#222222"}, textSize=13, textAlignment="center", frame={x="15px",y="45px",w="190px",h="40px"} }
+
+-- 5. Badge Pill (Blue) - Bottom Center
+_G.tooltipCanvas[5] = { type="rectangle", action="fill", fillColor={hex="#007AFF", alpha=1}, roundedRectRadii={xRadius=8,yRadius=8}, frame={x="60px",y="100px",w="100px",h="20px"} }
+
+-- 6. Badge Text
+_G.tooltipCanvas[6] = { type="text", text="SETTING", textColor={white=1}, textSize=12, textAlignment="center", frame={x="60px",y="102px",w="100px",h="20px"} }
+
+
+local tooltips = {
+    toggle_master = "Master Switch\nTurn entire Vimualizer On or Off.",
+    toggle_hud = "Key Hints\nDisplay popup suggestions when typing keys.",
+    toggle_buffer = "Keystrokes\nShow the running history of typed keys.",
+    toggle_action = "Actions\nShow text description of what keys do (e.g. 'Delete Word').",
+    toggle_entry = "Help Menu\nPress 'Escape' to see the main cheat sheet.",
+    toggle_macro = "Macros\nAllow recording and replaying macros with 'q'.",
+    toggle_aerospace = "Aerospace\nShow workspaces and window commands when holding Option.",
+    toggle_tooltips = "Show Tooltips\nEnable or disable these floating help cards.",
+    btn_pos = "HUD Position\nMove the popup to different screen corners.",
+    btn_align = "Alignment\nAlign text Left, Center, or Right.",
+    btn_title_minus = "Title Size\nDecrease the size of the title text.",
+    btn_title_plus = "Title Size\nIncrease the size of the title text.",
+    btn_text_minus = "Text Size\nDecrease the size of the body text.",
+    btn_text_plus = "Text Size\nIncrease the size of the body text.",
+    toggle_app = "App Filter\nDon't run Vimualizer in this specific app.",
+    btn_save = "Save Config\nPersist current configuration to disk.",
+    btn_exclusions = "Exclusions\nSee full list of ignored applications."
+}
+
+local function getSettingsTarget(relX, relY)
+    -- SECTION: FEATURES (Start 12%, Stride 5.5%, Height 4%)
+    -- 0: 12.0 - 16.0
+    -- 1: 17.5 - 21.5
+    -- 2: 23.0 - 27.0
+    -- 3: 28.5 - 32.5
+    -- 4: 34.0 - 38.0
+    -- 5: 39.5 - 43.5
+    -- 6: 45.0 - 49.0
+    -- 7: 50.5 - 54.5
+    if relY > 0.120 and relY < 0.160 then return "toggle_master"
+    elseif relY > 0.175 and relY < 0.215 then return "toggle_hud"
+    elseif relY > 0.230 and relY < 0.270 then return "toggle_buffer"
+    elseif relY > 0.285 and relY < 0.325 then return "toggle_action"
+    elseif relY > 0.340 and relY < 0.380 then return "toggle_entry"
+    elseif relY > 0.395 and relY < 0.435 then return "toggle_macro"
+    elseif relY > 0.450 and relY < 0.490 then return "toggle_aerospace"
+    elseif relY > 0.505 and relY < 0.545 then return "toggle_tooltips"
+    
+    -- SECTION: APPEARANCE (Header 59%)
+    elseif relY > 0.60 then
+        -- Updated Y-offsets for Sections below Features
+        -- Pos (63 - 67)
+        if relY > 0.63 and relY < 0.67 then
+            if relX < 0.5 then return "btn_pos" else return "btn_align" end
+        
+        -- Title (70 - 74)
+        elseif relY > 0.70 and relY < 0.74 then
+            if relX < 0.25 then return "btn_title_minus"
+            elseif relX > 0.75 then return "btn_title_plus" end
+        
+        -- Text (76 - 80)
+        elseif relY > 0.76 and relY < 0.80 then
+            if relX < 0.25 then return "btn_text_minus"
+            elseif relX > 0.75 then return "btn_text_plus" end
+        
+        -- SECTION: EXCLUSION (Header 83%, Row 87-91%)
+        elseif relY > 0.87 and relY < 0.91 and relX > 0.67 then return "toggle_app"
+        
+        -- FOOTER (93 - 97%)
+        elseif relY > 0.93 and relY < 0.97 then
+            if relX < 0.45 then return "btn_save"
+            elseif relX > 0.50 then return "btn_exclusions" end
+        end
+    end
+    return nil
+end
+
+if _G.hoverWatcher then _G.hoverWatcher:stop() end
+_G.hoverWatcher = eventtap.new({eventtap.event.types.mouseMoved}, function(e)
+    if not isTooltipsEnabled or not _G.prefPanel or not _G.prefPanel:isShowing() then 
+        if _G.tooltipCanvas:isShowing() then _G.tooltipCanvas:hide() end
+        return false 
+    end
+
+    local p = e:location()
+    local f = _G.prefPanel:frame()
+    
+    if p.x >= f.x and p.x <= (f.x + f.w) and p.y >= f.y and p.y <= (f.y + f.h) then
+        local relY = (p.y - f.y) / f.h
+        local relX = (p.x - f.x) / f.w
+        local target = getSettingsTarget(relX, relY)
+        
+        if target and tooltips[target] then
+            local rawTxt = tooltips[target]
+            local title, body = rawTxt:match("^(.*)\n(.*)$")
+            if not title then title = rawTxt; body = "" end
+            
+            -- Layout Calculations
+            local cardW = 220
+            local innerW = cardW - 20
+            local titleH = 25
+            
+            -- Calculate Body Height
+            local bodySize = _G.tooltipCanvas:minimumTextSize(4, body)
+            local innerH = math.max(40, bodySize.h + 20)
+            
+            local padding = 10
+            local badgeH = 25
+            local totalH = padding + titleH + padding + innerH + padding + (badgeH/2) + padding
+            
+            -- Update Canvas Frame
+            _G.tooltipCanvas:frame({x=p.x+20, y=p.y+20, w=cardW, h=totalH})
+            
+            -- 1. Outer Card
+            -- 2. Title
+            _G.tooltipCanvas[2].text = styledtext.new(title, {font={name=".AppleSystemUIFontBold", size=16}, color={white=1}, paragraphStyle={alignment="center"}})
+            
+            -- 3. Inner Box
+            _G.tooltipCanvas[3].frame = {x=10, y=40, w=innerW, h=innerH}
+            
+            -- 4. Description Text
+            _G.tooltipCanvas[4].frame = {x=15, y=45, w=innerW-10, h=innerH-10}
+            _G.tooltipCanvas[4].text = styledtext.new(body, {font={name=".AppleSystemUIFont", size=13}, color={hex="#222222"}, paragraphStyle={alignment="center"}})
+            
+            -- 5. Badge (Bottom Center, overlapping border)
+            local badgeW = 100
+            local badgeY = totalH - (badgeH) + 5 -- Peek out slightly or just inside
+            _G.tooltipCanvas[5].frame = {x=(cardW/2)-(badgeW/2), y=totalH - badgeH - 5, w=badgeW, h=badgeH}
+            _G.tooltipCanvas[6].frame = {x=(cardW/2)-(badgeW/2), y=totalH - badgeH - 2, w=badgeW, h=badgeH}
+            
+            _G.tooltipCanvas:show()
+            hs.mouse.cursor(hs.mouse.cursorTypes.pointingHand)
+            return false
+        end
+    end
+    _G.tooltipCanvas:hide()
+    hs.mouse.cursor(hs.mouse.cursorTypes.arrow)
+    return false
+end):start()
 local dragTarget = nil
 local dragOffset = {x=0, y=0}
 
@@ -553,67 +784,40 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
         local f = _G.prefPanel:frame()
         if _G.prefPanel:isShowing() and p.x >= f.x and p.x <= (f.x + f.w) and p.y >= f.y and p.y <= (f.y + f.h) then
             local relY = (p.y - f.y) / f.h; local relX = (p.x - f.x) / f.w; local changed = false
+            local target = getSettingsTarget(relX, relY)
 
-            -- SECTION: FEATURES (Start ~12%)
-            -- Each feature button is ~5% height, 1% gap.
-            -- 0: 12-17 (Master)
-            -- 1: 18-23 (Hud)
-            -- 2: 24-29 (Buffer)
-            -- 3: 30-35 (Action)
-            -- 4: 36-41 (Entry)
-            -- 5: 42-47 (Macro)
-            -- 6: 48-53 (Aerospace)
-
-            if relY > 0.12 and relY < 0.17 then isMasterEnabled = not isMasterEnabled; changed=true
-            elseif relY > 0.18 and relY < 0.23 then isHudEnabled = not isHudEnabled; changed=true
-            elseif relY > 0.24 and relY < 0.29 then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
-            elseif relY > 0.30 and relY < 0.35 then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
-            elseif relY > 0.36 and relY < 0.41 then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
-            elseif relY > 0.42 and relY < 0.47 then isMacroEnabled = not isMacroEnabled; changed=true
-            elseif relY > 0.48 and relY < 0.53 then isAerospaceEnabled = not isAerospaceEnabled; changed=true
-
-            -- SECTION: APPEARANCE (Header at 56%)
-            -- Position & Alignment: Start ~60% (subY = 56+4)
-            elseif relY > 0.60 and relY < 0.65 then
-                if relX < 0.5 then
-                    -- Position Clicked
-                    hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end
-                else
-                    -- Alignment Clicked
-                    if hudTextAlignment == "left" then hudTextAlignment = "center"
-                    elseif hudTextAlignment == "center" then hudTextAlignment = "right"
-                    else hudTextAlignment = "left" end
-                    presentHud("Alignment: " .. hudTextAlignment, previewMenu.text)
-                end
+            if target == "toggle_master" then isMasterEnabled = not isMasterEnabled; changed=true
+            elseif target == "toggle_hud" then isHudEnabled = not isHudEnabled; changed=true
+            elseif target == "toggle_buffer" then isBufferEnabled = not isBufferEnabled; if not isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
+            elseif target == "toggle_action" then isActionInfoEnabled = not isActionInfoEnabled; updateBufferGeometry(); changed=true
+            elseif target == "toggle_entry" then isEscapeMenuEnabled = not isEscapeMenuEnabled; changed=true
+            elseif target == "toggle_macro" then isMacroEnabled = not isMacroEnabled; changed=true
+            elseif target == "toggle_aerospace" then isAerospaceEnabled = not isAerospaceEnabled; changed=true
+            elseif target == "toggle_tooltips" then isTooltipsEnabled = not isTooltipsEnabled; changed=true; _G.tooltipCanvas:hide()
+            
+            elseif target == "btn_pos" then
+                hudPosIndex = hudPosIndex + 1; if hudPosIndex > 5 then hudPosIndex = 1 end
                 changed=true
-
-            -- Title Size: Start ~67% (sizeY1 = 60+7)
-            elseif relY > 0.67 and relY < 0.72 then
-                if relX < 0.25 then fontTitleSize=math.max(10, fontTitleSize-2) -- Left button region
-                elseif relX > 0.75 then fontTitleSize=math.min(60, fontTitleSize+2) end -- Right button region
-                changed=true; saveSettings(); presentHud("Title Size: "..fontTitleSize, previewMenu.text)
-
-            -- Text Size: Start ~73% (sizeY2 = 67+6)
-            elseif relY > 0.73 and relY < 0.78 then
-                if relX < 0.25 then fontBodySize=math.max(8, fontBodySize-1)
-                elseif relX > 0.75 then fontBodySize=math.min(40, fontBodySize+1) end
-                changed=true; saveSettings(); presentHud("Text Size: "..fontBodySize, previewMenu.text)
-
-            -- SECTION: EXCLUSION (Header at ~79%, sizeY2+8 isn't exactly right calc, let's recheck)
-            -- sizeY2 = 73. excY = 81. appRowY = 85.
-            -- App Toggle: Start ~85%
-            -- App Toggle (Start ~83%)
-            -- Moved exY to 79. AppRow = 83. Ends 88.
-            elseif relY > 0.83 and relY < 0.88 and relX > 0.67 then
+            elseif target == "btn_align" then
+                if hudTextAlignment == "left" then hudTextAlignment = "center"
+                elseif hudTextAlignment == "center" then hudTextAlignment = "right"
+                else hudTextAlignment = "left" end
+                presentHud("Alignment: " .. hudTextAlignment, previewMenu.text)
+                changed=true
+                
+            elseif target == "btn_title_minus" then fontTitleSize=math.max(10, fontTitleSize-2); changed=true; saveSettings(); presentHud("Title Size: "..fontTitleSize, previewMenu.text)
+            elseif target == "btn_title_plus" then fontTitleSize=math.min(60, fontTitleSize+2); changed=true; saveSettings(); presentHud("Title Size: "..fontTitleSize, previewMenu.text)
+            elseif target == "btn_text_minus" then fontBodySize=math.max(8, fontBodySize-1); changed=true; saveSettings(); presentHud("Text Size: "..fontBodySize, previewMenu.text)
+            elseif target == "btn_text_plus" then fontBodySize=math.min(40, fontBodySize+1); changed=true; saveSettings(); presentHud("Text Size: "..fontBodySize, previewMenu.text)
+            
+            elseif target == "toggle_app" then
                 local _, appID = getCurrentAppInfo()
                 if excludedApps[appID] then excludedApps[appID] = nil; if isBufferEnabled then _G.keyBuffer:show() end
                 else excludedApps[appID] = true; _G.keyBuffer:hide(); _G.hud:hide() end
                 changed=true; if _G.exclPanel:isShowing() then updateExclusionPanel() end
-
-            -- Footer Buttons (Start 89%)
-            elseif relY > 0.89 then
-                if relX < 0.45 then saveSettings(); alert.show("Vimualizer Settings Saved", 1)
-                elseif relX > 0.50 then updateExclusionPanel(); _G.exclPanel:show() end
+                
+            elseif target == "btn_save" then saveSettings(); alert.show("Vimualizer Settings Saved", 1)
+            elseif target == "btn_exclusions" then updateExclusionPanel(); _G.exclPanel:show()
             end
 
             if changed then saveSettings(); timer.doAfter(0, function() updatePrefsVisuals() end) end
@@ -674,6 +878,7 @@ _G.appWatcher = hs.application.watcher.new(function(appName, eventType, app)
         if _G.prefPanel:isShowing() then updatePrefsVisuals() end
     end
 end):start()
+
 
 _G.modWatcher = eventtap.new({eventtap.event.types.flagsChanged}, function(e)
     if not isMasterEnabled or isEditMode or currentState == VIM_STATE.INSERT or isCurrentAppDisabled() then return false end
