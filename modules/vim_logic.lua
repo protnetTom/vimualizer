@@ -1,0 +1,74 @@
+local vim_logic = {}
+
+local styledtext = require("hs.styledtext")
+local constants = require("modules.constants")
+local config = require("modules.config")
+
+vim_logic.currentState = constants.VIM_STATE.NORMAL
+vim_logic.keyHistory = {}
+vim_logic.recordingRegister = nil
+vim_logic.pendingMacroStart = false
+
+function vim_logic.getSequenceDescription()
+    local len = #vim_logic.keyHistory
+    if len == 0 then return "" end
+    local k1 = vim_logic.keyHistory[len]
+    local k2 = (len >= 2) and vim_logic.keyHistory[len-1] or nil
+    local k3 = (len >= 3) and vim_logic.keyHistory[len-2] or nil
+
+    if k3 and k2 and k1 then
+        if constants.vimOps[k3] and constants.vimContext[k2] then
+            local objName = constants.vimObjects[k1] or ("'" .. k1 .. "'")
+            return constants.vimOps[k3] .. " " .. constants.vimContext[k2] .. " " .. objName
+        end
+    end
+    if k2 and k1 then
+        if constants.argMotions[k2] then return constants.argMotions[k2] .. " '" .. k1 .. "'" end
+        if constants.vimOps[k2] and constants.vimContext[k1] then return constants.vimOps[k2] .. " " .. constants.vimContext[k1] .. "..." end
+        if constants.vimOps[k2] and k2 == k1 then return constants.vimOps[k2] .. " Line" end
+    end
+    if k1 and constants.vimOps[k1] then return constants.vimOps[k1] .. "..." end
+    local desc = constants.simpleActions[k1] or constants.vimMotions[k1]
+    if not desc and #k1 > 1 and k1:sub(1,1) == "^" then desc = "Ctrl + " .. k1:sub(2) end
+    return desc or ""
+end
+
+function vim_logic.updateStateDisplay()
+    local stateText, color = vim_logic.currentState, constants.colorTitle
+    if vim_logic.recordingRegister then 
+        stateText = "REC @" .. vim_logic.recordingRegister
+        color = constants.colorRec
+    elseif vim_logic.currentState == constants.VIM_STATE.INSERT then 
+        color = {red=0.4, green=1, blue=0.4, alpha=1}
+    elseif vim_logic.currentState == constants.VIM_STATE.VISUAL then 
+        color = {red=1, green=0.6, blue=0.2, alpha=1}
+    elseif vim_logic.currentState == constants.VIM_STATE.PENDING_CHANGE then 
+        stateText = "PENDING"
+        color = constants.colorAccent 
+    end
+    _G.keyBuffer[2].text = stateText
+    _G.keyBuffer[2].textColor = color
+end
+
+function vim_logic.addToBuffer(str)
+    table.insert(vim_logic.keyHistory, str)
+    if #vim_logic.keyHistory > constants.bufferMaxLen then table.remove(vim_logic.keyHistory, 1) end
+    _G.keyBuffer[3].text = table.concat(vim_logic.keyHistory, " ")
+    if config.isActionInfoEnabled then 
+        _G.keyBuffer[4].text = vim_logic.getSequenceDescription() 
+    end
+    vim_logic.updateStateDisplay()
+    if config.isBufferEnabled then _G.keyBuffer:show() end
+end
+
+function vim_logic.resetToNormal()
+    vim_logic.currentState = constants.VIM_STATE.NORMAL
+    vim_logic.pendingMacroStart = false
+    vim_logic.keyHistory = {}
+    _G.keyBuffer[3].text = ""
+    _G.keyBuffer[4].text = ""
+    vim_logic.updateStateDisplay()
+    _G.hud:hide()
+end
+
+return vim_logic

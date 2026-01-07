@@ -1,0 +1,4 @@
+devsetup.sh
+.idea/
+*.bak
+.DS_Store
