@@ -30,6 +30,7 @@ config.excludedApps = {
     ["com.apple.ScreenSaver.Engine"] = true
 }
 config.isSnippetsEnabled = true
+config.hasCompletedOnboarding = false
 config.snippets = {
     [";date"] = "{{date}}",
     [";time"] = "{{time}}",
@@ -86,6 +87,7 @@ function config.save()
         isReactiveOpacityEnabled = config.isReactiveOpacityEnabled,
         trainerDifficulty = config.trainerDifficulty,
         isSnippetsEnabled = config.isSnippetsEnabled,
+        hasCompletedOnboarding = config.hasCompletedOnboarding,
         snippets = config.snippets
     }
     json.write(settings, settingsFilePath, true, true)
@@ -117,6 +119,7 @@ function config.load()
         if settings.isReactiveOpacityEnabled ~= nil then config.isReactiveOpacityEnabled = settings.isReactiveOpacityEnabled end
         if settings.trainerDifficulty then config.trainerDifficulty = tonumber(settings.trainerDifficulty) end
         if settings.isSnippetsEnabled ~= nil then config.isSnippetsEnabled = settings.isSnippetsEnabled end
+        if settings.hasCompletedOnboarding ~= nil then config.hasCompletedOnboarding = settings.hasCompletedOnboarding end
         if settings.snippets then 
             for k, v in pairs(settings.snippets) do
                 config.snippets[k] = v
