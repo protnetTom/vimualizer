@@ -1,126 +1,61 @@
-# ✨ Vimualizer
+# Vimualizer
 
-### *Don't just type. Visualize.*
+Vimualizer is a real-time Head-Up Display (HUD) and productivity toolkit for Vim users on macOS. Built on the [Hammerspoon](https://www.hammerspoon.org/) automation engine, it visualizes your Vim keystrokes and motions as you type, providing instant feedback and helping you master your workflow.
 
-**Vimualizer** is the missing HUD for your macOS workflow. It turns your obscure Vim muscle memory into a real-time, human-readable light show on your screen.
+> **Note:** This project was developed entirely by AI. It represents a collaboration between human conceptual direction and AI-driven implementation, showcasing the capabilities of modern agentic coding.
 
-Whether you're demoing code, streaming, or just checking if you actually typed `ciw` or `diw`, Vimualizer has your back.
+## Key Features
 
----
+- **Real-time HUD & Key Buffer**: Instantly see your Vim keystrokes translated into human-readable actions. The interface dynamically updates to reflect your current mode (**Normal**, **Insert**, **Visual**, or **Pending**).
+- **Vim Sensei (Trainer)**: A built-in practice mode designed to sharpen your muscle memory. It includes progressive difficulty levels ranging from basic motions to advanced text object manipulations.
+- **Intelligent Text Expansion**: A Vim-friendly snippet engine that supports custom triggers and dynamic placeholders (e.g., `{{date}}`, `{{time}}`).
+- **Usage Analytics**: Track your command frequency and visualize the efficiency of your Vim usage through "keystrokes saved" statistics.
+- **Ghost Mode**: Features reactive opacity that automatically fades the UI during periods of inactivity, keeping your workspace clear of distractions.
+- **Fully Customizable UI**:
+  - **Drag-and-Drop**: Reposition the HUD and Key Buffer anywhere on your screen.
+  - **Typography**: Choose your preferred UI and Code fonts directly from the settings.
+  - **Scaling**: Adjust font sizes and alignment to match your screen resolution.
+- **Smart Exclusions**: Easily disable Vimualizer for specific applications (like Terminal or Neovim) where a HUD might be redundant.
 
-## ⚡️ The Engine (Prerequisites)
+## Prerequisites
 
-Vimualizer rides on the back of the legendary **Hammerspoon** automation engine.
+### 1. Install Hammerspoon
+Vimualizer runs as a module for [Hammerspoon](https://www.hammerspoon.org/).
 
-### 1. Grab the Hammer 🔨
+```bash
+brew install --cask hammerspoon
+```
 
-You need Hammerspoon installed to run the magic.
+### 2. Grant Accessibility Permissions
+Hammerspoon requires Accessibility access to listen for keystroke events:
+1. Open **System Settings** > **Privacy & Security** > **Accessibility**.
+2. Toggle **Hammerspoon** to **ON**.
 
-* **Via Homebrew (The cool way):**
-    ```bash
-    brew install --cask hammerspoon
-    ```
-* **Manual Download:**
-  Grab it from [Hammerspoon.org](https://www.hammerspoon.org/).
+## Installation
 
-### 2. Unlock the Gates 🔓
+### Automated Setup (Recommended)
+Clone the repository and run the installation script:
 
-Vimualizer listens to your keyboard to translate those sweet, sweet Vim chords.
+```bash
+chmod +x install.sh
+./install.sh
+```
+*This script backs up your current `~/.hammerspoon/init.lua` to `init.lua.bak` and installs the Vimualizer modules.*
 
-1. Open **Hammerspoon**.
-2. Go to **System Settings** > **Privacy & Security** > **Accessibility**.
-3. Flip the switch for **Hammerspoon** to **ON**. ✅
+### Manual Setup
+1. Copy the `modules` directory and `init.lua` to your `~/.hammerspoon/` folder.
+2. If you have an existing configuration, you can rename the Vimualizer `init.lua` to `vimualizer.lua` and add `require("vimualizer")` to your main script.
+3. Reload your Hammerspoon configuration.
 
----
+## Usage
 
-## 🚀 Installation
+- **Open Settings**: Press `Cmd + Opt + P` to toggle the configuration panel.
+- **HUD Placement**: Enter settings mode (`Cmd + Opt + P`) and drag the "DRAG ME" handles to reposition any UI element.
+- **Toggle Features**: Use the settings panel to enable/disable specific modules like Ghost Mode, Snippets, or Analytics.
+- **Vim Training**: Start a "Vim Sensei" session from the settings panel to practice your motions.
 
-### 1. Find the Bunker
-
-Open your terminal and jump to the config directory:
-`~/.hammerspoon`
-
-*(Empty? Just launch Hammerspoon once and it’ll build the house for you.)*
-
-### 2. Drop the Payload
-
-1. Create a file named `init.lua` inside that folder.
-2. **Paste the entire Vimualizer script** into it.
-3. Save. 💾
-
-> **Pro Tip:** Already a Hammerspoon power user? Save our script as `vimualizer.lua` and just add `require("vimualizer")` to your existing `init.lua`. Clean code, happy life.
-
-### 3. Ignite
-
-1. Click the **Hammerspoon icon** in your menu bar.
-2. Hit **Reload Config**.
-3. Look for the alert: *"Vimualizer Loaded"*. You are now live.
-
----
-
-## 📦 Automated Installation
-
-We provide a helper script to automate the setup process. This script handles dependency installation (Homebrew, Hammerspoon) and configuration file placement.
-
-**⚠️ DISCLAIMER: Use at your own risk.**
-This script makes changes to your system configuration and overwrites your Hammerspoon `init.lua` file. Always review scripts before running them on your machine.
-
-### Instructions
-
-1. Download `init.lua` (the Vimualizer source code) and `install.sh` to the same folder.
-2. Open your terminal and navigate to that folder.
-3. Make the script executable:
-   ```bash
-   chmod +x install.sh
-   ```
-4. Run the installer:
-   ```bash
-   ./install.sh
-   ```
-5. Launch **Hammerspoon** from your Applications folder.
-
-*Note: If you already use Hammerspoon, your existing config will be backed up to `~/.hammerspoon/init.lua.bak`.*
+## Acknowledgments
+This project was conceptualized by its human creator and implemented from scratch by Advanced Agentic AI.
 
 ---
-
-## 🎮 How to Drive
-
-| Action | Trigger | The Vibe |
-| :--- | :--- | :--- |
-| **The Control Panel** | `Cmd` + `Opt` + `P` | Opens the settings. Tweak it til it breaks. |
-| **Move the HUD** | **Drag & Drop** | Grab the "DRAG ME" handle. Put it anywhere. |
-| **Instant Feedback** | **Type Code** | Watch your keystrokes appear like magic. |
-
-### 🎛 The Settings Panel
-
-* **💾 Save:** Hits the disk. We store your layout in `~/Documents/Vimualizer/settings.json` so your setup survives a reboot.
-* **🚫 Exclusions:** Terminal already has Vim? Add it to the **Exclusion List** and Vimualizer will sleep when that app is focused.
-* **🔎 Zoom:** Text too small? Pump up the font size with the `+` buttons.
-
----
-
-## 🚑 Troubleshooting
-
-**HUD plays hide and seek?**
-macOS permissions can be finicky. Toggle the **Accessibility** permission for Hammerspoon **OFF** and then **ON** again. It’s the "turn it off and on again" of the 21st century.
-
-**Escape key jailed?**
-If hitting `Esc` feels like it's hitting a wall, make sure you pasted the *latest* version of the script. We fixed the event taps so your Escape key runs free.
-
-**Settings forgot you?**
-We try to auto-create `~/Documents/Vimualizer`, but if your Mac is on lockdown, you might need to make that folder yourself.
-
----
-
-
-## 🦾 Human Vision. Machine Precision.
-
-**Full Disclosure:** This project is a cyborg.
-The concepts, architecture, and "million dollar questions" are pure **Human Ingenuity**.
-The Lua syntax, boilerplate, and error handling? Proudly generated by **Artificial Intelligence**.
-
-*Dreamed by Carbon. Built by Silicon.*
-
----
-
-### *Happy Vimming.* 🎹
+*Happy Vimming!*
