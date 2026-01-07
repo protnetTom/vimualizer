@@ -12,6 +12,7 @@ if _G.hud then _G.hud:delete() end
 if _G.keyBuffer then _G.keyBuffer:delete() end
 if _G.prefPanel then _G.prefPanel:delete() end
 if _G.exclPanel then _G.exclPanel:delete() end
+if _G.statsPanel then _G.statsPanel:delete() end
 if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
 
 -- 2. REQUIRE MODULES

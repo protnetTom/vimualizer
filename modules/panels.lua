@@ -20,7 +20,7 @@ end
 
 function panels.initPrefs()
     -- Safeguard: Ensure all sequential indices are initialized
-    for i=1,60 do _G.prefPanel[i] = { type="rectangle", action="skip", frame={x=0,y=0,w=0,h=0} } end
+    for i=1,100 do _G.prefPanel[i] = { type="rectangle", action="skip", frame={x=0,y=0,w=0,h=0} } end
 
     _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=constants.panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=constants.hudStrokeColor, strokeWidth=1, shadow=constants.shadowSpec }
     _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=constants.colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="5%"} }
@@ -86,10 +86,14 @@ function panels.initPrefs()
 
     -- Footer
     local footerY = 96
-    _G.prefPanel[48] = { type="rectangle", action="fill", fillColor=constants.btnColorSave, frame={x="10%",y=footerY.."%",w="35%",h="2.2%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[49] = { type="text", text="Save", textColor={white=1}, textSize=14, textAlignment="center", frame={x="10%",y=(footerY+0.4).."%",w="35%",h="2.2%"} }
-    _G.prefPanel[50] = { type="rectangle", action="fill", fillColor=constants.btnColorAction, frame={x="50%",y=footerY.."%",w="40%",h="2.2%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[51] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=14, textAlignment="center", frame={x="50%",y=(footerY+0.4).."%",w="40%",h="2.2%"} }
+    _G.prefPanel[48] = { type="rectangle", action="fill", fillColor=constants.btnColorSave, frame={x="10%",y=footerY.."%",w="25%",h="2.2%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[49] = { type="text", text="Save", textColor={white=1}, textSize=14, textAlignment="center", frame={x="10%",y=(footerY+0.4).."%",w="25%",h="2.2%"} }
+    
+    _G.prefPanel[50] = { type="rectangle", action="fill", fillColor=constants.btnColorAction, frame={x="37.5%",y=footerY.."%",w="25%",h="2.2%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[51] = { type="text", text="Analytics", textColor={white=1}, textSize=14, textAlignment="center", frame={x="37.5%",y=(footerY+0.4).."%",w="25%",h="2.2%"} }
+
+    _G.prefPanel[52] = { type="rectangle", action="fill", fillColor={hex="#5856D6"}, frame={x="65%",y=footerY.."%",w="25%",h="2.2%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[53] = { type="text", text="Exclusions", textColor={white=1}, textSize=14, textAlignment="center", frame={x="65%",y=(footerY+0.4).."%",w="25%",h="2.2%"} }
 end
 
 function panels.updatePrefsVisuals()
@@ -143,8 +147,60 @@ function panels.updatePrefsVisuals()
     _G.prefPanel[47].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=config.fontUIBold, size=11}, color={white=1}, paragraphStyle={alignment="center"}})
 end
 
+function panels.updateStatsPanel()
+    local stats = require("modules.stats")
+    
+    -- Thoroughly clear the canvas
+    local currentLen = #_G.statsPanel
+    for i = currentLen, 1, -1 do _G.statsPanel[i] = nil end
+
+    -- Background & Title
+    _G.statsPanel[1] = { type="rectangle", action="fill", fillColor=constants.panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=constants.hudStrokeColor, strokeWidth=1, shadow=constants.shadowSpec }
+    _G.statsPanel[2] = { type="text", text="Efficiency Analytics", textColor=constants.colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="8%"} }
+
+    -- Summary Section
+    local summaryY = 60
+    _G.statsPanel[3] = { type="text", text="LIFETIME STATS", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="0%",y=summaryY,w="100%",h=20} }
+    
+    local keysTyped = tonumber(stats.data.totalKeysTyped) or 0
+    local keysSaved = tonumber(stats.data.keysSaved) or 0
+    local totalUsed = keysTyped + keysSaved
+    local efficiency = (totalUsed > 0) and math.floor((keysSaved / totalUsed) * 100) or 0
+
+    local statsTxt = string.format("Keystrokes Typed: %d\nKeystrokes Saved: %d\nVim Efficiency: %d%%", keysTyped, keysSaved, efficiency)
+    _G.statsPanel[4] = { type="text", text=statsTxt, textColor={white=0.9}, textSize=18, textAlignment="center", frame={x="10%", y=summaryY + 30, w="80%", h=80} }
+
+    _G.statsPanel[5] = { type="text", text="TOP COMMANDS", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="0%", y=summaryY + 120, w="100%", h=20} }
+    
+    -- Graph Section
+    local top = stats.getTopCommands(12)
+    local maxFreq = 1
+    if top and top[1] and top[1].freq then maxFreq = top[1].freq end
+    
+    local idx = 6
+    for i, item in ipairs(top) do
+        local rowY = summaryY + 150 + ((i-1) * 35)
+        local barW = math.floor((item.freq / maxFreq) * 300)
+        local barX = 150
+        
+        _G.statsPanel[idx] = { type="text", text=tostring(item.cmd), textColor=constants.colorKey, textSize=15, textAlignment="right", frame={x=10, y=rowY, w=130, h=30}, textFont=config.fontCode }
+        idx = idx + 1
+        _G.statsPanel[idx] = { type="rectangle", action="fill", fillColor={hex="#0A84FF", alpha=0.3}, frame={x=barX, y=rowY+5, w=barW, h=20}, roundedRectRadii={xRadius=4,yRadius=4} }
+        idx = idx + 1
+        _G.statsPanel[idx] = { type="text", text=tostring(item.freq), textColor={white=0.7}, textSize=12, textAlignment="left", frame={x=barX + barW + 10, y=rowY+5, w=60, h=20} }
+        idx = idx + 1
+    end
+
+    -- Footer
+    _G.statsPanel[idx] = { type="rectangle", action="fill", fillColor=constants.btnColorAction, frame={x="30%", y="90%", w="40%", h="5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    idx = idx + 1
+    _G.statsPanel[idx] = { type="text", text="Close Results", textColor={white=1}, textSize=16, textAlignment="center", frame={x="30%", y="91.2%", w="40%", h="5%"} }
+    
+    _G.statsPanel:show()
+end
+
 function panels.updateExclusionPanel()
-    while #_G.exclPanel > 0 do _G.exclPanel[#_G.exclPanel] = nil end
+    while #_G.exclPanel > 0 do _G.exclPanel[1] = nil end
 
     _G.exclPanel[1] = { type="rectangle", action="fill", fillColor=constants.panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=constants.hudStrokeColor, strokeWidth=1, shadow=constants.shadowSpec }
     _G.exclPanel[2] = { type="text", text="Excluded Apps", textColor=constants.colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="8%"} }
@@ -207,8 +263,9 @@ function panels.getSettingsTarget(relX, relY)
         
         -- FOOTER (96 - 99%)
         elseif relY > 0.96 then
-            if relX < 0.45 then return "btn_save"
-            elseif relX > 0.50 then return "btn_exclusions" end
+            if relX < 0.35 then return "btn_save"
+            elseif relX > 0.38 and relX < 0.63 then return "btn_analytics"
+            elseif relX > 0.65 then return "btn_exclusions" end
         end
     end
     return nil

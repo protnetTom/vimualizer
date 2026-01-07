@@ -3,6 +3,7 @@ local vim_logic = {}
 local styledtext = require("hs.styledtext")
 local constants = require("modules.constants")
 local config = require("modules.config")
+local stats = require("modules.stats")
 
 vim_logic.currentState = constants.VIM_STATE.NORMAL
 vim_logic.keyHistory = {}
@@ -59,6 +60,30 @@ function vim_logic.addToBuffer(str)
     end
     vim_logic.updateStateDisplay()
     if config.isBufferEnabled then _G.keyBuffer:show() end
+
+    -- Statistical Tracking
+    stats.recordCommand(str)
+    
+    -- Detection of efficiency: e.g. "5j" or "d3w"
+    local fullBuf = table.concat(vim_logic.keyHistory, "")
+    local countStr, motionStr = fullBuf:match("(%d+)(%a+)$")
+    if countStr and motionStr then
+        local num = tonumber(countStr)
+        if num and num > 1 then
+            -- Efficiency gained by using a count prefix
+            -- We only record this once when the motion completes the sequence
+            local saved = num - 1 -- Each digit + the motion represents 1 key typed. 
+                                 -- "10j" (3 keys) replaces 10 "j"s. Saved = 10 - 3 = 7.
+                                 -- In our logic: num (10) - length of prefix (2) - 1 (motion)
+            local overhead = #countStr
+            local actualSaved = num - overhead - 1
+            if actualSaved > 0 then
+                -- Note: This is a simple heuristic. It might double count if not careful,
+                -- but since we check only when motionStr is at the end, it's fairly safe.
+                stats.recordKeysSaved(actualSaved)
+            end
+        end
+    end
 end
 
 function vim_logic.resetToNormal()

@@ -16,6 +16,10 @@ constants.prefX, constants.prefY = (constants.screen.w - constants.prefW) / 2, (
 constants.exclW, constants.exclH = 500, 600
 constants.exclX, constants.exclY = constants.prefX + constants.prefW + 20, constants.prefY
 
+-- STATS PANEL GEOMETRY
+constants.statsW, constants.statsH = 600, 750
+constants.statsX, constants.statsY = constants.prefX - constants.statsW - 20, constants.prefY
+
 -- THEME: macOS Dark Mode
 constants.hudBgColor = { hex="#1e1e1e", alpha=0.90 }
 constants.hudStrokeColor = { white=1, alpha=0.15 }

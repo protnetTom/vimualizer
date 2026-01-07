@@ -14,6 +14,7 @@ _G.hud = canvas.new({x=0,y=0,w=100,h=100})
 _G.keyBuffer = canvas.new({x=0, y=0, w=constants.bufferW, h=constants.bufferH})
 _G.prefPanel = canvas.new({x=constants.prefX, y=constants.prefY, w=constants.prefW, h=constants.prefH}):level(hs.canvas.windowLevels.floating)
 _G.exclPanel = canvas.new({x=constants.exclX, y=constants.exclY, w=constants.exclW, h=constants.exclH}):level(hs.canvas.windowLevels.floating)
+_G.statsPanel = canvas.new({x=constants.statsX, y=constants.statsY, w=constants.statsW, h=constants.statsH}):level(hs.canvas.windowLevels.floating + 5)
 _G.tooltipCanvas = canvas.new({x=0,y=0,w=200,h=60}):level(hs.canvas.windowLevels.floating + 10)
 
 ui.opacityTimer = nil

@@ -125,6 +125,7 @@ function watchers.init()
                     changed=true; if _G.exclPanel:isShowing() then panels.updateExclusionPanel() end
                     
                 elseif target == "btn_save" then config.save(); alert.show("Vimualizer Settings Saved", 1)
+                elseif target == "btn_analytics" then panels.updateStatsPanel(); _G.statsPanel:show()
                 elseif target == "btn_exclusions" then panels.updateExclusionPanel(); _G.exclPanel:show()
                 end
 
@@ -145,6 +146,13 @@ function watchers.init()
                         config.save(); panels.updateExclusionPanel(); panels.updatePrefsVisuals()
                     end
                 end
+                return true
+            end
+
+            local sF = _G.statsPanel:frame()
+            if _G.statsPanel:isShowing() and p.x >= sF.x and p.x <= (sF.x + sF.w) and p.y >= sF.y and p.y <= (sF.y + sF.h) then
+                local relY = (p.y - sF.y) / sF.h
+                if relY > 0.90 then _G.statsPanel:hide() end
                 return true
             end
 
@@ -212,6 +220,7 @@ function watchers.init()
 
         if keyName == "escape" or (flags.ctrl and keyName == "[") then
             if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
+            if _G.statsPanel:isShowing() then _G.statsPanel:hide(); return true end
             if _G.prefPanel:isShowing() then _G.prefPanel:hide(); config.isEditMode=false; ui.updateDragHandles(); vim_logic.resetToNormal(); return true end
             if _G.hud:isShowing() or #vim_logic.keyHistory > 0 then vim_logic.resetToNormal(); return false end
             if config.isHudEnabled and config.isEscapeMenuEnabled and not config.isEditMode and not config.excludedApps[bundleID] then 

@@ -39,7 +39,8 @@ menus.tooltips = {
     toggle_macro = "Allow macro recording (q)",
     toggle_aerospace = "Option/Alt window commands",
     toggle_tooltips = "Toggle these help cards",
-    toggle_ghost = "Fade UI when inactive"
+    toggle_ghost = "Fade UI when inactive",
+    btn_analytics = "View efficiency stats & heatmap"
 }
 
 return menus
