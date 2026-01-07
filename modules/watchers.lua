@@ -18,6 +18,7 @@ local ui = require("modules.ui")
 local panels = require("modules.panels")
 local vim_logic = require("modules.vim_logic")
 local trainer = require("modules.trainer")
+local snippets = require("modules.snippets")
 
 local dragTarget = nil
 local dragOffset = {x=0, y=0}
@@ -51,12 +52,12 @@ function watchers.init()
                 _G.tooltipCanvas[2].frame = {x=padding, y=padding, w=cardW-(padding*2), h=textSize.h}
                 
                 _G.tooltipCanvas:show()
-                mouse.cursor(hs.mouse.cursorTypes.pointingHand)
+                mouse.cursor(mouse.getCurrentCursorTypes().pointingHand)
                 return false
             end
         end
         _G.tooltipCanvas:hide()
-        mouse.cursor(hs.mouse.cursorTypes.arrow)
+        mouse.cursor(mouse.getCurrentCursorTypes().arrow)
         return false
     end):start()
 
@@ -91,6 +92,10 @@ function watchers.init()
                     end
                     changed = true
                 
+                elseif target == "btn_manage_snippets" then
+                    panels.updateSnipPanel()
+                    _G.snipPanel:show()
+
                 elseif target == "btn_pos" then
                     config.hudPosIndex = config.hudPosIndex + 1; if config.hudPosIndex > 5 then config.hudPosIndex = 1 end
                     changed=true
@@ -109,22 +114,32 @@ function watchers.init()
                 elseif target == "toggle_ghost" then config.isReactiveOpacityEnabled = not config.isReactiveOpacityEnabled; changed=true; if not config.isReactiveOpacityEnabled then ui.resetOpacity() end
 
                 elseif target == "btn_font_ui" then
-                    local btn, newFont = dialog.textPrompt("Set Main Font", "Enter font name (e.g. Helvetica, Inter):", config.fontUI, "OK", "Cancel")
-                    if btn == "OK" and newFont and newFont ~= "" then
-                        config.fontUI = newFont; config.fontUIBold = newFont .. " Bold"
-                        _G.keyBuffer[4].textFont = config.fontUI
-                        _G.keyBuffer[2].textFont = config.fontUIBold
-                        changed = true; config.save()
-                        ui.presentHud("Main Font Updated", "New Main Font: " .. newFont .. "\n\n" .. menus.previewMenu.text)
-                    end
+                    _G.interactionWatcher:stop()
+                    timer.doAfter(0.1, function()
+                        hs.application.get("org.hammerspoon.Hammerspoon"):activate()
+                        local btn, newFont = dialog.textPrompt("Set Main Font", "Enter font name (e.g. Helvetica, Inter):", config.fontUI, "OK", "Cancel")
+                        if btn == "OK" and newFont and newFont ~= "" then
+                            config.fontUI = newFont; config.fontUIBold = newFont .. " Bold"
+                            _G.keyBuffer[4].textFont = config.fontUI
+                            _G.keyBuffer[2].textFont = config.fontUIBold
+                            config.save(); panels.updatePrefsVisuals()
+                            ui.presentHud("Main Font Updated", "New Main Font: " .. newFont .. "\n\n" .. menus.previewMenu.text)
+                        end
+                        _G.interactionWatcher:start()
+                    end)
                 elseif target == "btn_font_code" then
-                    local btn, newFont = dialog.textPrompt("Set Code Font", "Enter font name (e.g. Menlo, Monaco):", config.fontCode, "OK", "Cancel")
-                    if btn == "OK" and newFont and newFont ~= "" then
-                        config.fontCode = newFont
-                        _G.keyBuffer[3].textFont = config.fontCode
-                        changed = true; config.save()
-                        ui.presentHud("Code Font Updated", "New Code Font: " .. newFont .. "\n\n" .. menus.previewMenu.text)
-                    end
+                    _G.interactionWatcher:stop()
+                    timer.doAfter(0.1, function()
+                        hs.application.get("org.hammerspoon.Hammerspoon"):activate()
+                        local btn, newFont = dialog.textPrompt("Set Code Font", "Enter font name (e.g. Menlo, Monaco):", config.fontCode, "OK", "Cancel")
+                        if btn == "OK" and newFont and newFont ~= "" then
+                            config.fontCode = newFont
+                            _G.keyBuffer[3].textFont = config.fontCode
+                            config.save(); panels.updatePrefsVisuals()
+                            ui.presentHud("Code Font Updated", "New Code Font: " .. newFont .. "\n\n" .. menus.previewMenu.text)
+                        end
+                        _G.interactionWatcher:start()
+                    end)
 
                 elseif target == "toggle_app" then
                     local _, appID = panels.getCurrentAppInfo()
@@ -143,7 +158,7 @@ function watchers.init()
                 end
 
                 if changed then config.save(); timer.doAfter(0, function() panels.updatePrefsVisuals() end) end
-                return true
+                return target ~= nil
             end
 
             local eF = _G.exclPanel:frame()
@@ -166,6 +181,52 @@ function watchers.init()
             if _G.statsPanel:isShowing() and p.x >= sF.x and p.x <= (sF.x + sF.w) and p.y >= sF.y and p.y <= (sF.y + sF.h) then
                 local relY = (p.y - sF.y) / sF.h
                 if relY > 0.90 then _G.statsPanel:hide() end
+                return true
+            end
+
+            local snF = _G.snipPanel:frame()
+            if _G.snipPanel:isShowing() and p.x >= snF.x and p.x <= (snF.x + snF.w) and p.y >= snF.y and p.y <= (snF.y + snF.h) then
+                local relY = (p.y - snF.y) / snF.h
+                -- ACTION: CLOSE (relY > 0.89)
+                if relY > 0.89 then _G.snipPanel:hide(); return true end
+                
+                -- ACTION: ADD NEW (0.81 to 0.88)
+                if relY > 0.81 and relY < 0.885 then
+                    _G.interactionWatcher:stop()
+                    _G.snipPanel:hide()
+                    timer.doAfter(0.2, function()
+                        hs.application.get("org.hammerspoon.Hammerspoon"):activate()
+                        local btn, trigger = dialog.textPrompt("New Snippet: Trigger", "Enter trigger (e.g. ;mysnip):", "", "Next", "Cancel")
+                        if btn == "Next" and trigger and trigger ~= "" then
+                            local btn2, expansion = dialog.textPrompt("New Snippet: Expansion", "Enter expansion text:", "", "Add", "Cancel")
+                            if btn2 == "Add" and expansion and expansion ~= "" then
+                                config.snippets[trigger] = expansion
+                                config.save()
+                            end
+                        end
+                        panels.updateSnipPanel()
+                        _G.snipPanel:show()
+                        _G.interactionWatcher:start()
+                    end)
+                    return true
+                end
+
+                local rowH = 26; local startY = 60
+                local relativeClickY = p.y - snF.y - startY
+                if relativeClickY > 0 then
+                    local rowIndex = math.floor(relativeClickY / (rowH + 2)) + 1
+                    local relX = (p.x - snF.x) / snF.w
+                    if relX > 0.85 and panels.sortedSnippets[rowIndex] then
+                        local trigger = panels.sortedSnippets[rowIndex].t
+                        config.snippets[trigger] = nil
+                        config.save(); panels.updateSnipPanel()
+                    end
+                end
+                return true
+            end
+
+            local pF = _G.prefPanel:frame()
+            if _G.prefPanel:isShowing() and p.x >= pF.x and p.x <= (pF.x + pF.w) and p.y >= pF.y and p.y <= (pF.y + pF.h) then
                 return true
             end
 
@@ -199,11 +260,13 @@ function watchers.init()
             else if config.isBufferEnabled then _G.keyBuffer:show() end end
             if _G.prefPanel:isShowing() then panels.updatePrefsVisuals() end
             ui.resetOpacity()
+            snippets.clear()
         end
     end):start()
 
     _G.modWatcher = eventtap.new({eventtap.event.types.flagsChanged}, function(e)
         ui.resetOpacity()
+        if snippets.isExpanding then return false end
         local _, bundleID = panels.getCurrentAppInfo()
         if not config.isMasterEnabled or config.isEditMode or vim_logic.currentState == constants.VIM_STATE.INSERT or config.excludedApps[bundleID] then return false end
 
@@ -227,14 +290,23 @@ function watchers.init()
 
     _G.keyWatcher = eventtap.new({eventtap.event.types.keyDown}, function(e)
         ui.resetOpacity()
+        if snippets.isExpanding then return false end
         local flags = e:getFlags(); local keyCode = e:getKeyCode(); local keyName = keycodes.map[keyCode]
 
         local _, bundleID = panels.getCurrentAppInfo()
 
         if keyName == "escape" or (flags.ctrl and keyName == "[") then
             if _G.exclPanel:isShowing() then _G.exclPanel:hide(); return true end
+            if _G.snipPanel:isShowing() then _G.snipPanel:hide(); return true end
             if _G.statsPanel:isShowing() then _G.statsPanel:hide(); return true end
-            if _G.prefPanel:isShowing() then _G.prefPanel:hide(); config.isEditMode=false; ui.updateDragHandles(); vim_logic.resetToNormal(); return true end
+            if _G.prefPanel:isShowing() then 
+                _G.prefPanel:hide()
+                _G.exclPanel:hide()
+                _G.snipPanel:hide()
+                _G.statsPanel:hide()
+                config.isEditMode=false; ui.updateDragHandles(); vim_logic.resetToNormal(); 
+                return true 
+            end
             if trainer.isActive then trainer.stop(); return true end
             if _G.hud:isShowing() or #vim_logic.keyHistory > 0 then vim_logic.resetToNormal(); return false end
             if config.isHudEnabled and config.isEscapeMenuEnabled and not config.isEditMode and not config.excludedApps[bundleID] then 
@@ -258,8 +330,25 @@ function watchers.init()
              vim_logic.addToBuffer("⌥"..cleanKey); return false
         end
 
-        if vim_logic.currentState == constants.VIM_STATE.INSERT then return false end
-        local bufferChar = char; if keyName=="space" then bufferChar="␣" elseif keyName=="return" then bufferChar="↵" elseif keyName=="backspace" then bufferChar="⌫" elseif flags.ctrl then bufferChar="^"..(keyName or "?") end
+        if vim_logic.currentState == constants.VIM_STATE.INSERT then 
+            return snippets.processKey(char, keyCode)
+        end
+        local bufferChar = char
+        if keyName == "up" then bufferChar = "↑"
+        elseif keyName == "down" then bufferChar = "↓"
+        elseif keyName == "left" then bufferChar = "←"
+        elseif keyName == "right" then bufferChar = "→"
+        elseif keyName == "pageup" then bufferChar = "⇞"
+        elseif keyName == "pagedown" then bufferChar = "⇟"
+        elseif keyName == "home" then bufferChar = "↖"
+        elseif keyName == "end" then bufferChar = "↘"
+        elseif keyName:match("^f%d+$") then bufferChar = "⟨"..keyName:upper().."⟩"
+        elseif keyName == "space" then bufferChar = "␣"
+        elseif keyName == "return" then bufferChar = "↵"
+        elseif keyName == "backspace" then bufferChar = "⌫"
+        elseif keyName == "tab" then bufferChar = "⇥"
+        elseif flags.ctrl then bufferChar = "^" .. (keyName or "?")
+        end
 
         if config.isMacroEnabled then
             if vim_logic.recordingRegister and bufferChar == "q" then vim_logic.recordingRegister = nil; vim_logic.addToBuffer("q (Stop)"); return false end
@@ -267,9 +356,25 @@ function watchers.init()
             if vim_logic.currentState == constants.VIM_STATE.NORMAL and bufferChar == "q" and not vim_logic.recordingRegister then vim_logic.pendingMacroStart = true; vim_logic.addToBuffer("q"); if config.isHudEnabled then ui.presentHud(menus.triggers.q.title, menus.triggers.q.text, constants.colorAccent) end; return false end
         end
 
-        if constants.insertTriggers[bufferChar] then vim_logic.currentState = constants.VIM_STATE.INSERT; vim_logic.addToBuffer(bufferChar); return false end
-        if bufferChar == "c" and vim_logic.currentState == constants.VIM_STATE.NORMAL then vim_logic.currentState = constants.VIM_STATE.PENDING_CHANGE; vim_logic.addToBuffer("c"); if config.isHudEnabled then ui.presentHud(menus.triggers.c.title, menus.triggers.c.text, constants.colorAccent) end; return false end
-        if vim_logic.currentState == constants.VIM_STATE.PENDING_CHANGE then vim_logic.currentState = constants.VIM_STATE.INSERT; vim_logic.addToBuffer(bufferChar); _G.hud:hide(); return false end
+        if constants.insertTriggers[bufferChar] then 
+            vim_logic.currentState = constants.VIM_STATE.INSERT 
+            vim_logic.addToBuffer(bufferChar)
+            snippets.clear()
+            return false 
+        end
+        if bufferChar == "c" and vim_logic.currentState == constants.VIM_STATE.NORMAL then 
+            vim_logic.currentState = constants.VIM_STATE.PENDING_CHANGE 
+            vim_logic.addToBuffer("c")
+            if config.isHudEnabled then ui.presentHud(menus.triggers.c.title, menus.triggers.c.text, constants.colorAccent) end 
+            return false 
+        end
+        if vim_logic.currentState == constants.VIM_STATE.PENDING_CHANGE then 
+            vim_logic.currentState = constants.VIM_STATE.INSERT 
+            vim_logic.addToBuffer(bufferChar)
+            snippets.clear()
+            _G.hud:hide()
+            return false 
+        end
         if constants.visualTriggers[bufferChar] then vim_logic.currentState = constants.VIM_STATE.VISUAL; vim_logic.addToBuffer(bufferChar); if config.isHudEnabled then local vMenu = menus.triggers[bufferChar] or menus.triggers.v; ui.presentHud(vMenu.title, vMenu.text, constants.colorTitle) end; return false end
 
         if vim_logic.currentState == constants.VIM_STATE.NORMAL or vim_logic.currentState == constants.VIM_STATE.VISUAL then

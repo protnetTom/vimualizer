@@ -29,6 +29,24 @@ config.excludedApps = {
     ["com.apple.loginwindow"] = true,
     ["com.apple.ScreenSaver.Engine"] = true
 }
+config.isSnippetsEnabled = true
+config.snippets = {
+    [";date"] = "{{date}}",
+    [";time"] = "{{time}}",
+     [";shrug"] = "¯\\_(ツ)_/¯",
+    [";vml"] = "Vimualizer",
+    [";lenny"] = "( ͡° ͜ʖ ͡°)",
+    [";rocket"] = "🚀",
+    [";fire"] = "🔥",
+    [";check"] = "✅",
+    [";todo"] = "TODO: ",
+    [";fixme"] = "FIXME: ",
+    [";rt"] = "→",
+    [";lt"] = "←",
+    [";up"] = "↑",
+    [";dn"] = "↓",
+    [";mail"] = "your.email@example.com"
+}
 
 local homeDir = os.getenv("HOME")
 local saveDir = homeDir .. "/Documents/Vimualizer"
@@ -66,7 +84,9 @@ function config.save()
         fontUI = config.fontUI,
         fontUIBold = config.fontUIBold,
         isReactiveOpacityEnabled = config.isReactiveOpacityEnabled,
-        trainerDifficulty = config.trainerDifficulty
+        trainerDifficulty = config.trainerDifficulty,
+        isSnippetsEnabled = config.isSnippetsEnabled,
+        snippets = config.snippets
     }
     json.write(settings, settingsFilePath, true, true)
 end
@@ -96,6 +116,12 @@ function config.load()
         if settings.fontUIBold then config.fontUIBold = settings.fontUIBold end
         if settings.isReactiveOpacityEnabled ~= nil then config.isReactiveOpacityEnabled = settings.isReactiveOpacityEnabled end
         if settings.trainerDifficulty then config.trainerDifficulty = tonumber(settings.trainerDifficulty) end
+        if settings.isSnippetsEnabled ~= nil then config.isSnippetsEnabled = settings.isSnippetsEnabled end
+        if settings.snippets then 
+            for k, v in pairs(settings.snippets) do
+                config.snippets[k] = v
+            end
+        end
     end
 end
 

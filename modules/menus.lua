@@ -41,6 +41,8 @@ menus.tooltips = {
     toggle_tooltips = "Toggle these help cards",
     toggle_ghost = "Fade UI when inactive",
     toggle_trainer = "Practice Vim motions with challenges",
+    toggle_snippets = "Expand custom triggers (e.g. ;date) while typing",
+    btn_manage_snippets = "Add or remove expansion snippets",
     btn_analytics = "View efficiency stats & heatmap"
 }
 
