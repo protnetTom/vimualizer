@@ -2,3 +2,4 @@ devsetup.sh
 .idea/
 *.bak
 .DS_Store
+FUTURE_FEATURES.md
