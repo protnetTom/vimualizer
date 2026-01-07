@@ -24,6 +24,7 @@ local application = require("hs.application")
 local json = require("hs.json")
 local alert = require("hs.alert")
 local fs = require("hs.fs")
+local dialog = require("hs.dialog")
 
 -- ================= CONFIGURATION =================
 
@@ -48,10 +49,15 @@ local excludedApps = {
 
 -- Visual Settings
 -- Visual Settings
+-- Visual Settings
 local fontTitleSize = 32
 local fontBodySize = 20
 local hudPosIndex = 1
 local customHudX, customHudY = 100, 100
+
+local fontUI = ".AppleSystemUIFont"
+local fontUIBold = ".AppleSystemUIFontBold"
+local fontCode = "Menlo" -- Monospaced for keys
 
 local maxHudWidth = 700
 local minHudWidth = 350
@@ -132,7 +138,10 @@ local function saveSettings()
         customHudX = customHudX,
         customHudY = customHudY,
         bufferX = bufferX,
-        bufferY = bufferY
+        bufferY = bufferY,
+        fontCode = fontCode,
+        fontUI = fontUI,
+        fontUIBold = fontUIBold
     }
     json.write(settings, settingsFilePath, true, true)
 end
@@ -157,6 +166,9 @@ local function loadSettings()
         if settings.customHudY then customHudY = tonumber(settings.customHudY) end
         if settings.bufferX then bufferX = tonumber(settings.bufferX) end
         if settings.bufferY then bufferY = tonumber(settings.bufferY) end
+        if settings.fontCode then fontCode = settings.fontCode end
+        if settings.fontUI then fontUI = settings.fontUI end
+        if settings.fontUIBold then fontUIBold = settings.fontUIBold end
     end
 end
 
@@ -276,9 +288,9 @@ end
 local function formatHudBody(rawText)
     local finalStyled = styledtext.new("")
     -- Use global hudTextAlignment variable
-    local baseStyle = { font={name=".AppleSystemUIFont", size=fontBodySize}, color=colorDesc, paragraphStyle={lineSpacing=6, alignment=hudTextAlignment} }
-    local keyStyle =  { font={name=".AppleSystemUIFontBold", size=fontBodySize}, color=colorKey, paragraphStyle={lineSpacing=6, alignment=hudTextAlignment} }
-    local headerStyle = { font={name=".AppleSystemUIFontBold", size=fontBodySize-2}, color=colorHeader, paragraphStyle={lineSpacing=6, alignment=hudTextAlignment} }
+    local baseStyle = { font={name=fontUI, size=fontBodySize}, color=colorDesc, paragraphStyle={lineSpacing=6, alignment=hudTextAlignment} }
+    local keyStyle =  { font={name=fontCode, size=fontBodySize}, color=colorKey, paragraphStyle={lineSpacing=6, alignment=hudTextAlignment} }
+    local headerStyle = { font={name=fontUIBold, size=fontBodySize-2}, color=colorHeader, paragraphStyle={lineSpacing=6, alignment=hudTextAlignment} }
 
     if not rawText or rawText == "" then return finalStyled end
     for line in rawText:gmatch("[^\r\n]+") do
@@ -307,9 +319,9 @@ _G.hud[5] = { type="text", action="skip", text="DRAG ME", textSize=11, textColor
 
 _G.keyBuffer = canvas.new({x=bufferX, y=bufferY, w=bufferW, h=bufferH})
 _G.keyBuffer[1] = { type="rectangle", action="fill", fillColor=bufferBgColor, roundedRectRadii={xRadius=12,yRadius=12}, strokeColor=hudStrokeColor, strokeWidth=1, shadow=shadowSpec }
-_G.keyBuffer[2] = { type="text", text="NORMAL", textColor=colorTitle, textSize=22, textAlignment="center", frame={x="0%",y="30%",w="25%",h="100%"} }
-_G.keyBuffer[3] = { type="text", text="", textColor=bufferTxtColor, textSize=34, textAlignment="right", frame={x="25%",y="5%",w="70%",h="60%"} }
-_G.keyBuffer[4] = { type="text", text="", textColor=colorInfo, textSize=15, textAlignment="right", frame={x="25%",y="60%",w="70%",h="30%"} }
+_G.keyBuffer[2] = { type="text", text="NORMAL", textColor=colorTitle, textSize=22, textAlignment="center", frame={x="0%",y="30%",w="25%",h="100%"}, textFont=fontUIBold }
+_G.keyBuffer[3] = { type="text", text="", textColor=bufferTxtColor, textSize=34, textAlignment="right", frame={x="25%",y="5%",w="70%",h="60%"}, textFont=fontCode }
+_G.keyBuffer[4] = { type="text", text="", textColor=colorInfo, textSize=15, textAlignment="right", frame={x="25%",y="60%",w="70%",h="30%"}, textFont=fontUI }
 _G.keyBuffer[5] = { type="rectangle", action="skip", fillColor=colorDrag, roundedRectRadii={xRadius=8,yRadius=8}, frame={x=0,y=0,w="100%",h=20} }
 _G.keyBuffer[6] = { type="text", action="skip", text="DRAG ME", textSize=10, textColor={white=1}, textAlignment="center", frame={x=0,y=5,w="100%",h=10} }
 
@@ -359,7 +371,7 @@ end
 
 local function presentHud(title, rawBodyText, titleOverrideColor)
     -- Use global hudTextAlignment variable
-    local styledTitle = styledtext.new(title, { font={name=".AppleSystemUIFontBold", size=fontTitleSize}, color=titleOverrideColor or colorTitle, paragraphStyle={alignment=hudTextAlignment} })
+    local styledTitle = styledtext.new(title, { font={name=fontUIBold, size=fontTitleSize}, color=titleOverrideColor or colorTitle, paragraphStyle={alignment=hudTextAlignment} })
     local styledBody = formatHudBody(rawBodyText)
 
     local innerMaxW = maxHudWidth - (hudPadding * 2)
@@ -442,23 +454,30 @@ local function initPrefs()
     _G.prefPanel[33] = { type="text", text="+", textColor={white=1}, textSize=20, textAlignment="center", frame={x="75%",y=(sizeY2+0.6).."%",w="15%",h="4%"} }
     _G.prefPanel[34] = { type="text", text="Text Size", textColor={white=1}, textSize=15, textAlignment="center", frame={x="25%",y=(sizeY2+0.9).."%",w="50%",h="4%"} }
 
-    -- SECTION: EXCLUSIONS (Index 35)
-    local excY = 83 -- 83%
-    _G.prefPanel[35] = { type="text", text="EXCLUSIONS", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=excY.."%",w="80%",h="3%"} }
+    -- SECTION: FONTS (Indices 35-38)
+    local fontY = 82
+    _G.prefPanel[35] = { type="rectangle", action="fill", frame={x="10%",y=fontY.."%",w="38%",h="4%"} }
+    _G.prefPanel[36] = { type="text", textAlignment="center", frame={x="10%",y=(fontY+0.9).."%",w="38%",h="4%"} }
+    _G.prefPanel[37] = { type="rectangle", action="fill", frame={x="52%",y=fontY.."%",w="38%",h="4%"} }
+    _G.prefPanel[38] = { type="text", textAlignment="center", frame={x="52%",y=(fontY+0.9).."%",w="38%",h="4%"} }
 
-    -- App Toggle (Indices 36-39)
-    local appRowY = 87 -- 87%
-    _G.prefPanel[36] = { type="rectangle", action="fill", frame={x="10%",y=appRowY.."%",w="55%",h="4%"} }
-    _G.prefPanel[37] = { type="text", text="App Name", textColor={white=1}, textSize=13, textAlignment="center", frame={x="10%",y=(appRowY+0.9).."%",w="55%",h="4%"} }
-    _G.prefPanel[38] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="4%"} }
-    _G.prefPanel[39] = { type="text", text="Toggle", textColor={white=1}, textSize=13, textAlignment="center", frame={x="67%",y=(appRowY+0.9).."%",w="23%",h="4%"} }
+    -- SECTION: EXCLUSIONS (Index 39)
+    local excY = 88
+    _G.prefPanel[39] = { type="text", text="EXCLUSIONS", textColor=colorHeader, textSize=12, textAlignment="center", frame={x="10%",y=excY.."%",w="80%",h="3%"} }
 
-    -- Footer Buttons (Indices 40-43)
-    local footerY = 93 -- 93-97%
-    _G.prefPanel[40] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=footerY.."%",w="35%",h="4%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[41] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(footerY+0.9).."%",w="35%",h="4%"} }
-    _G.prefPanel[42] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=footerY.."%",w="40%",h="4%"}, roundedRectRadii={xRadius=6,yRadius=6} }
-    _G.prefPanel[43] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(footerY+0.9).."%",w="40%",h="4%"} }
+    -- App Toggle (Indices 40-43)
+    local appRowY = 91
+    _G.prefPanel[40] = { type="rectangle", action="fill", frame={x="10%",y=appRowY.."%",w="55%",h="4%"} }
+    _G.prefPanel[41] = { type="text", text="App Name", textColor={white=1}, textSize=13, textAlignment="center", frame={x="10%",y=(appRowY+0.9).."%",w="55%",h="4%"} }
+    _G.prefPanel[42] = { type="rectangle", action="fill", frame={x="67%",y=appRowY.."%",w="23%",h="4%"} }
+    _G.prefPanel[43] = { type="text", text="Toggle", textColor={white=1}, textSize=13, textAlignment="center", frame={x="67%",y=(appRowY+0.9).."%",w="23%",h="4%"} }
+
+    -- Footer Buttons (Indices 44-47)
+    local footerY = 95.5
+    _G.prefPanel[44] = { type="rectangle", action="fill", fillColor=btnColorSave, frame={x="10%",y=footerY.."%",w="35%",h="3.5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[45] = { type="text", text="Save", textColor={white=1}, textSize=15, textAlignment="center", frame={x="10%",y=(footerY+0.9).."%",w="35%",h="3.5%"} }
+    _G.prefPanel[46] = { type="rectangle", action="fill", fillColor=btnColorAction, frame={x="50%",y=footerY.."%",w="40%",h="3.5%"}, roundedRectRadii={xRadius=6,yRadius=6} }
+    _G.prefPanel[47] = { type="text", text="Exclusions >>", textColor={white=1}, textSize=15, textAlignment="center", frame={x="50%",y=(footerY+0.9).."%",w="40%",h="3.5%"} }
 end
 
 local function updatePrefsVisuals()
@@ -466,7 +485,7 @@ local function updatePrefsVisuals()
     local function styleBtn(idx, enabled, txt)
         _G.prefPanel[idx].fillColor = (enabled and btnColorOn or btnColorOff)
         _G.prefPanel[idx].roundedRectRadii = {xRadius=6, yRadius=6}
-        _G.prefPanel[idx+1].text = styledtext.new(txt, {font={name=".AppleSystemUIFontBold", size=15}, color={white=1}, paragraphStyle={alignment="center"}})
+        _G.prefPanel[idx+1].text = styledtext.new(txt, {font={name=fontUIBold, size=15}, color={white=1}, paragraphStyle={alignment="center"}})
     end
     local function styleActionBtn(idx)
         _G.prefPanel[idx].fillColor = btnColorAction
@@ -486,32 +505,38 @@ local function updatePrefsVisuals()
     -- Appearance: Position (21,22)
     local posNames = {"Left", "TopRight", "BotRight", "Center", "Custom"}
     styleActionBtn(21)
-    _G.prefPanel[22].text = styledtext.new("Position: "..posNames[hudPosIndex], {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[22].text = styledtext.new("Position: "..posNames[hudPosIndex], {font={name=fontUIBold, size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
     -- Appearance: Alignment (23,24)
     local alignLabel = "Align: " .. (hudTextAlignment:gsub("^%l", string.upper))
     styleActionBtn(23)
-    _G.prefPanel[24].text = styledtext.new(alignLabel, {font={name=".AppleSystemUIFontBold", size=14}, color={white=1}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[24].text = styledtext.new(alignLabel, {font={name=fontUIBold, size=14}, color={white=1}, paragraphStyle={alignment="center"}})
 
     -- Appearance: Title Size (25-29)
     styleActionBtn(25); styleActionBtn(27)
     _G.prefPanel[29].text = "Title Size: " .. fontTitleSize
 
-    -- Appearance: Text Size (30-34)
+    -- Text Size (30-34)
     styleActionBtn(30); styleActionBtn(32)
     _G.prefPanel[34].text = "Text Size: " .. fontBodySize
 
-    -- Exclusions (36-39)
+    -- Fonts (35-38)
+    styleActionBtn(35)
+    _G.prefPanel[36].text = styledtext.new("Main Font", {font={name=fontUIBold, size=12}, color={white=1}, paragraphStyle={alignment="center"}})
+    styleActionBtn(37)
+    _G.prefPanel[38].text = styledtext.new("Code Font", {font={name=fontUIBold, size=12}, color={white=1}, paragraphStyle={alignment="center"}})
+
+    -- Exclusions (40-43)
     local appName, appID = getCurrentAppInfo()
     local isExcluded = excludedApps[appID] == true
     -- App Name Box
-    _G.prefPanel[36].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}
-    _G.prefPanel[36].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[37].text = styledtext.new("App: "..appName, {font={name=".AppleSystemUIFont", size=13}, color={white=0.9}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[40].fillColor = {red=0.15, green=0.15, blue=0.15, alpha=1}
+    _G.prefPanel[40].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[41].text = styledtext.new("App: "..appName, {font={name=fontUI, size=13}, color={white=0.9}, paragraphStyle={alignment="center"}})
     -- Toggle Box
-    _G.prefPanel[38].fillColor = isExcluded and btnColorOff or btnColorOn
-    _G.prefPanel[38].roundedRectRadii = {xRadius=6,yRadius=6}
-    _G.prefPanel[39].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=".AppleSystemUIFontBold", size=13}, color={white=1}, paragraphStyle={alignment="center"}})
+    _G.prefPanel[42].fillColor = isExcluded and btnColorOff or btnColorOn
+    _G.prefPanel[42].roundedRectRadii = {xRadius=6,yRadius=6}
+    _G.prefPanel[43].text = styledtext.new(isExcluded and "Include" or "Exclude", {font={name=fontUIBold, size=13}, color={white=1}, paragraphStyle={alignment="center"}})
 end
 
 -- 2. EXCLUSION LIST PANEL
@@ -588,6 +613,8 @@ local tooltips = {
     btn_title_plus = "Title Size\nIncrease the size of the title text.",
     btn_text_minus = "Text Size\nDecrease the size of the body text.",
     btn_text_plus = "Text Size\nIncrease the size of the body text.",
+    btn_font_ui = "Main Font\nChange the default font for descriptions.",
+    btn_font_code = "Code Font\nChange the font for keystrokes (e.g. Menlo).",
     toggle_app = "App Filter\nDon't run Vimualizer in this specific app.",
     btn_save = "Save Config\nPersist current configuration to disk.",
     btn_exclusions = "Exclusions\nSee full list of ignored applications."
@@ -629,11 +656,15 @@ local function getSettingsTarget(relX, relY)
             if relX < 0.25 then return "btn_text_minus"
             elseif relX > 0.75 then return "btn_text_plus" end
         
-        -- SECTION: EXCLUSION (Header 83%, Row 87-91%)
-        elseif relY > 0.87 and relY < 0.91 and relX > 0.67 then return "toggle_app"
+        -- SECTION: FONTS (82 - 86)
+        elseif relY > 0.82 and relY < 0.86 then
+            if relX < 0.5 then return "btn_font_ui" else return "btn_font_code" end
+
+        -- SECTION: EXCLUSION (Header 88%, Row 91-95%)
+        elseif relY > 0.91 and relY < 0.95 and relX > 0.67 then return "toggle_app"
         
-        -- FOOTER (93 - 97%)
-        elseif relY > 0.93 and relY < 0.97 then
+        -- FOOTER (95.5 - 99%)
+        elseif relY > 0.955 and relY < 0.99 then
             if relX < 0.45 then return "btn_save"
             elseif relX > 0.50 then return "btn_exclusions" end
         end
@@ -740,6 +771,24 @@ _G.interactionWatcher = eventtap.new({ eventtap.event.types.leftMouseDown, event
             elseif target == "btn_text_minus" then fontBodySize=math.max(8, fontBodySize-1); changed=true; saveSettings(); presentHud("Text Size: "..fontBodySize, previewMenu.text)
             elseif target == "btn_text_plus" then fontBodySize=math.min(40, fontBodySize+1); changed=true; saveSettings(); presentHud("Text Size: "..fontBodySize, previewMenu.text)
             
+            elseif target == "btn_font_ui" then
+                local btn, newFont = dialog.textPrompt("Set Main Font", "Enter font name (e.g. Helvetica, Inter):", fontUI, "OK", "Cancel")
+                if btn == "OK" and newFont and newFont ~= "" then
+                    fontUI = newFont; fontUIBold = newFont .. " Bold" -- Guessing bold, but user can change
+                    _G.keyBuffer[4].textFont = fontUI
+                    _G.keyBuffer[2].textFont = fontUIBold
+                    changed = true; saveSettings()
+                    presentHud("Main Font Updated", "New Main Font: " .. newFont .. "\n\n" .. previewMenu.text)
+                end
+            elseif target == "btn_font_code" then
+                local btn, newFont = dialog.textPrompt("Set Code Font", "Enter font name (e.g. Menlo, Monaco):", fontCode, "OK", "Cancel")
+                if btn == "OK" and newFont and newFont ~= "" then
+                    fontCode = newFont
+                    _G.keyBuffer[3].textFont = fontCode
+                    changed = true; saveSettings()
+                    presentHud("Code Font Updated", "New Code Font: " .. newFont .. "\n\n" .. previewMenu.text)
+                end
+
             elseif target == "toggle_app" then
                 local _, appID = getCurrentAppInfo()
                 if excludedApps[appID] then excludedApps[appID] = nil; if isBufferEnabled then _G.keyBuffer:show() end
