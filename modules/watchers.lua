@@ -72,7 +72,13 @@ function watchers.init()
                 local relY = (p.y - f.y) / f.h; local relX = (p.x - f.x) / f.w; local changed = false
                 local target = panels.getSettingsTarget(relX, relY)
 
-                if target == "toggle_master" then config.isMasterEnabled = not config.isMasterEnabled; changed=true
+                -- TAB SWITCHING
+                if target == "tab_features" then panels.currentTab = 1; panels.updatePrefsVisuals(); return true
+                elseif target == "tab_appearance" then panels.currentTab = 2; panels.updatePrefsVisuals(); return true
+                elseif target == "tab_advanced" then panels.currentTab = 3; panels.updatePrefsVisuals(); return true
+                
+                -- FEATURE TOGGLES
+                elseif target == "toggle_master" then config.isMasterEnabled = not config.isMasterEnabled; changed=true
                 elseif target == "toggle_hud" then config.isHudEnabled = not config.isHudEnabled; changed=true
                 elseif target == "toggle_buffer" then config.isBufferEnabled = not config.isBufferEnabled; if not config.isBufferEnabled then _G.keyBuffer:hide() else _G.keyBuffer:show() end; changed=true
                 elseif target == "toggle_action" then config.isActionInfoEnabled = not config.isActionInfoEnabled; ui.updateBufferGeometry(); changed=true
