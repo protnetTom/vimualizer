@@ -58,6 +58,7 @@ function onboarding.init()
     _G.onboardingCanvas[1] = {
         type = "rectangle",
         action = "fill",
+        frame = { x = 0, y = 0, w = "100%", h = "100%" },
         fillColor = { hex = "#1c1c1e", alpha = 0.98 },
         roundedRectRadii = { xRadius = 20, yRadius = 20 },
         strokeColor = { white = 1, alpha = 0.2 },
@@ -71,7 +72,7 @@ function onboarding.init()
         text = "",
         textSize = 80,
         textAlignment = "center",
-        frame = { x = 0, y = 40, w = "100%", h = 100 }
+        frame = { x = 0, y = 40, w = 500, h = 100 }
     }
 
     -- Title
@@ -103,7 +104,7 @@ function onboarding.init()
         textColor = { white = 0.3 },
         textSize = 12,
         textAlignment = "center",
-        frame = { x = 0, y = 310, w = "100%", h = 20 }
+        frame = { x = 0, y = 310, w = 500, h = 20 }
     }
 
     -- Next Button Background

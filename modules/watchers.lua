@@ -80,6 +80,18 @@ function watchers.init()
                 elseif target == "toggle_macro" then config.isMacroEnabled = not config.isMacroEnabled; changed=true
                 elseif target == "toggle_aerospace" then config.isAerospaceEnabled = not config.isAerospaceEnabled; changed=true
                 elseif target == "toggle_tooltips" then config.isTooltipsEnabled = not config.isTooltipsEnabled; changed=true; _G.tooltipCanvas:hide()
+                elseif target == "toggle_easymotion" then
+                    local flags = eventtap.checkKeyboardModifiers()
+                    if flags.shift then
+                        -- Cycle through aggression levels: 1 -> 2 -> 3 -> 1
+                        config.easyMotionAggression = (config.easyMotionAggression % 3) + 1
+                        local labels = {"Conservative", "Moderate", "Aggressive"}
+                        alert.show("EasyMotion: " .. labels[config.easyMotionAggression], 0.8)
+                    else
+                        config.isEasyMotionEnabled = not config.isEasyMotionEnabled
+                    end
+                    changed=true
+                elseif target == "toggle_snippets" then config.isSnippetsEnabled = not config.isSnippetsEnabled; changed=true
                 elseif target == "toggle_trainer" then 
                     if trainer.isActive then 
                         trainer.stop() 

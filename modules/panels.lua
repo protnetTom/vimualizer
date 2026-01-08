@@ -23,16 +23,16 @@ function panels.initPrefs()
     -- Safeguard: Ensure all sequential indices are initialized
     for i=1,100 do _G.prefPanel[i] = { type="rectangle", action="skip", frame={x=0,y=0,w=0,h=0} } end
 
-    _G.prefPanel[1] = { type="rectangle", action="fill", fillColor=constants.panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=constants.hudStrokeColor, strokeWidth=1, shadow=constants.shadowSpec }
-    _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=constants.colorTitle, textSize=24, textAlignment="center", frame={x="0%",y="2%",w="100%",h="5%"} }
+    _G.prefPanel[1] = { type="rectangle", frame={x=0,y=0,w="100%",h="100%"}, action="fill", fillColor=constants.panelColor, roundedRectRadii={xRadius=16, yRadius=16}, strokeColor=constants.hudStrokeColor, strokeWidth=1, shadow=constants.shadowSpec }
+    _G.prefPanel[2] = { type="text", text="Vimualizer Config", textColor=constants.colorTitle, textSize=24, textAlignment="center", frame={x=0,y="2%",w="100%",h="5%"} }
 
     -- SECTION: FEATURES (Index 3)
     _G.prefPanel[3] = { type="text", text="FEATURES", textColor=constants.colorHeader, textSize=12, textAlignment="center", frame={x="10%",y="8%",w="80%",h="3%"} }
 
-    for i=0,9 do
+    for i=0,10 do
         local yPos = 12 + (i * 4.4)
         _G.prefPanel[4 + (i*2)] = { type="rectangle", action="fill", frame={x="10%",y=yPos.."%",w="80%",h="3.6%"} }
-        _G.prefPanel[5 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+0.8).."%",w="80%",h="3.6%"} }
+        _G.prefPanel[5 + (i*2)] = { type="text", textAlignment="center", frame={x="10%",y=(yPos+0.8).."% ",w="80%",h="3.6%"} }
     end
 
     -- SECTION: APPEARANCE (Index 25)
@@ -128,6 +128,9 @@ function panels.updatePrefsVisuals()
     local trainer = require("modules.trainer")
     styleBtn(20, trainer.isActive, "Trainer Mode: "..(trainer.isActive and "ON" or "OFF"))
     styleBtn(22, config.isSnippetsEnabled, "Text Snippets: "..(config.isSnippetsEnabled and "ON" or "OFF"))
+    local aggressionLabels = {"Conservative", "Moderate", "Aggressive"}
+    local aggressionLabel = aggressionLabels[config.easyMotionAggression] or "Moderate"
+    styleBtn(24, config.isEasyMotionEnabled, "EasyMotion: "..(config.isEasyMotionEnabled and "ON" or "OFF").." ("..aggressionLabel..")")
 
     -- APPEARANCE
     local posNames = {"Left", "TopRight", "BotRight", "Center", "Custom"}
@@ -271,11 +274,10 @@ function panels.updateSnipPanel()
 end
 
 function panels.getSettingsTarget(relX, relY)
-    -- SECTION: FEATURES (Start 12%, Stride 5.0%, Height 4%)
-    -- Original: relY > 0.120 and relY < 0.160 then return "toggle_master"
-    -- New logic for features (0.12 to 0.56, 9 rows, 5% height each)
-    if relY > 0.11 and relY < 0.56 then
-        local row = math.floor((relY - 0.11) / 0.044)
+    -- SECTION: FEATURES (Start 12%, Stride 4.4%, Height 3.6%)
+    -- 11 rows now (0 to 10)
+    if relY > 0.115 and relY < 0.596 then
+        local row = math.floor((relY - 0.115) / 0.044)
         if row == 0 then return "toggle_master"
         elseif row == 1 then return "toggle_hud"
         elseif row == 2 then return "toggle_buffer"
@@ -285,7 +287,8 @@ function panels.getSettingsTarget(relX, relY)
         elseif row == 6 then return "toggle_aerospace"
         elseif row == 7 then return "toggle_tooltips"
         elseif row == 8 then return "toggle_trainer"
-        elseif row == 9 then return "toggle_snippets" end
+        elseif row == 9 then return "toggle_snippets"
+        elseif row == 10 then return "toggle_easymotion" end
     
     -- SECTION: APPEARANCE (Header 59%)
     elseif relY > 0.60 then
