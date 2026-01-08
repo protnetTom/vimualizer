@@ -17,6 +17,10 @@ if _G.statsPanel then _G.statsPanel:delete() end
 if _G.tooltipCanvas then _G.tooltipCanvas:delete() end
 if _G.onboardingCanvas then _G.onboardingCanvas:delete() end
 
+-- Cleanup EasyMotion if active
+local em = package.loaded["modules.easymotion"]
+if em then em.stop() end
+
 -- 2. REQUIRE MODULES
 local constants = require("modules.constants")
 local config = require("modules.config")
@@ -26,6 +30,7 @@ local panels = require("modules.panels")
 local vim_logic = require("modules.vim_logic")
 local watchers = require("modules.watchers")
 local onboarding = require("modules.onboarding")
+local easymotion = require("modules.easymotion")
 
 -- 3. INITIALIZATION
 config.load()
@@ -57,6 +62,10 @@ hs.hotkey.bind({"cmd", "alt"}, "P", function()
         ui.presentHud("Preview", menus.previewMenu.text)
         ui.updateDragHandles()
     end
+end)
+
+hs.hotkey.bind({"cmd", "alt"}, "J", function()
+    if config.isEasyMotionEnabled then easymotion.start() end
 end)
 
 -- 5. STARTUP

@@ -11,6 +11,8 @@ config.isAerospaceEnabled = false
 config.isEscapeMenuEnabled = true
 config.isMacroEnabled = true
 config.isTooltipsEnabled = true
+config.isEasyMotionEnabled = true
+config.easyMotionAggression = 2  -- 1=Conservative, 2=Moderate, 3=Aggressive
 config.isEditMode = false
 config.hudTextAlignment = "center"
 config.isReactiveOpacityEnabled = true
@@ -72,6 +74,8 @@ function config.save()
         isEscapeMenuEnabled = config.isEscapeMenuEnabled,
         isMacroEnabled = config.isMacroEnabled,
         isTooltipsEnabled = config.isTooltipsEnabled,
+        isEasyMotionEnabled = config.isEasyMotionEnabled,
+        easyMotionAggression = config.easyMotionAggression,
         hudTextAlignment = config.hudTextAlignment,
         excludedApps = cleanExclusions,
         fontTitleSize = config.fontTitleSize,
@@ -104,6 +108,8 @@ function config.load()
         if settings.isEscapeMenuEnabled ~= nil then config.isEscapeMenuEnabled = settings.isEscapeMenuEnabled end
         if settings.isMacroEnabled ~= nil then config.isMacroEnabled = settings.isMacroEnabled end
         if settings.isTooltipsEnabled ~= nil then config.isTooltipsEnabled = settings.isTooltipsEnabled end
+        if settings.isEasyMotionEnabled ~= nil then config.isEasyMotionEnabled = settings.isEasyMotionEnabled end
+        if settings.easyMotionAggression then config.easyMotionAggression = tonumber(settings.easyMotionAggression) end
         if settings.hudTextAlignment ~= nil then config.hudTextAlignment = settings.hudTextAlignment end
         if settings.excludedApps then config.excludedApps = settings.excludedApps end
         if settings.fontTitleSize then config.fontTitleSize = tonumber(settings.fontTitleSize) end
